@@ -77,6 +77,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // For forcing re-render
   const [newProduct, setNewProduct] = useState({
     name: { ar: '', en: '' },
     category: 'fruits' as ProductCategory,
@@ -228,7 +229,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   useEffect(filterUsers, [users, userSearchTerm]);
   useEffect(filterOrders, [orders, orderSearchTerm, orderStatusFilter]);
-  useEffect(filterProducts, [products, productSearchTerm, categoryFilter, language]);
+  useEffect(filterProducts, [products, productSearchTerm, categoryFilter, language, refreshKey]);
 
   // Update order status
   const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
@@ -520,10 +521,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       onUpdateProduct(productId, updatedProduct);
       alert(updatedProduct.isPublished ? 'تم نشر المنتج بنجاح ✅' : 'تم إخفاء المنتج بنجاح 🔒');
       
-      // Refresh the page to show updated status
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Force re-render to show updated status
+      setRefreshKey(prev => prev + 1);
     }
   };
 
@@ -999,7 +998,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
 
       {activeSubTab === 'list' && (
-        <div className="products-table-container">
+        <div className="products-table-container" key={`products-list-${refreshKey}`}>
           <table className="products-table">
             <thead>
               <tr>
