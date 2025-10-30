@@ -67,6 +67,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [orderSearchTerm, setOrderSearchTerm] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [showOrderViewModal, setShowOrderViewModal] = useState(false);
 
   // Products state
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -277,6 +279,178 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const closeViewUser = () => {
     setViewingUser(null);
     setShowUserViewModal(false);
+  };
+
+  // View order details and invoice
+  const openViewOrder = (order: Order) => {
+    setViewingOrder(order);
+    setShowOrderViewModal(true);
+  };
+
+  const closeViewOrder = () => {
+    setViewingOrder(null);
+    setShowOrderViewModal(false);
+  };
+
+  // Print order invoice
+  const printOrderInvoice = (order: Order) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const invoiceHTML = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>فاتورة ${order.orderNumber}</title>
+        <style>
+          body { font-family: 'Arial', sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+          .invoice { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
+          .header { text-align: center; border-bottom: 3px solid #4CAF50; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 2rem; color: #4CAF50; font-weight: bold; margin-bottom: 10px; }
+          .company-info { color: #666; font-size: 0.9rem; }
+          .invoice-details { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+          .section-title { font-weight: bold; color: #4CAF50; border-bottom: 2px solid #e9ecef; padding-bottom: 5px; margin-bottom: 15px; }
+          .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0; }
+          .info-label { font-weight: 600; color: #333; }
+          .info-value { color: #666; }
+          .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          .items-table th { background: #4CAF50; color: white; padding: 12px; text-align: center; }
+          .items-table td { padding: 10px; text-align: center; border-bottom: 1px solid #e9ecef; }
+          .items-table tr:nth-child(even) { background: #f8f9fa; }
+          .totals { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #4CAF50; }
+          .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+          .final-total { font-size: 1.2rem; font-weight: bold; color: #4CAF50; border-top: 2px solid #4CAF50; padding-top: 10px; }
+          .status-badge { padding: 5px 15px; border-radius: 20px; color: white; background: #4CAF50; }
+          .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef; color: #666; }
+          @media print { body { background: white; } .invoice { box-shadow: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="invoice">
+          <div class="header">
+            <div class="logo">🍎 فكهاني الكويت - Q8 Fruit</div>
+            <div class="company-info">
+              أفضل الفواكه والخضار الطازجة في الكويت<br>
+              هاتف: 98899426 | بريد إلكتروني: summit_kw@hotmail.com
+            </div>
+          </div>
+
+          <div class="invoice-details">
+            <div>
+              <div class="section-title">تفاصيل الطلب</div>
+              <div class="info-row">
+                <span class="info-label">رقم الطلب:</span>
+                <span class="info-value">${order.orderNumber}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">تاريخ الطلب:</span>
+                <span class="info-value">${order.date}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">طريقة الدفع:</span>
+                <span class="info-value">${order.paymentMethod}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">الحالة:</span>
+                <span class="status-badge">${getStatusText(order.status)}</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="section-title">بيانات العميل</div>
+              <div class="info-row">
+                <span class="info-label">الاسم:</span>
+                <span class="info-value">${order.customerInfo.name}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">الهاتف:</span>
+                <span class="info-value">${order.customerInfo.phone}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">العنوان:</span>
+                <span class="info-value">${order.customerInfo.address}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">المنطقة:</span>
+                <span class="info-value">${order.customerInfo.area}</span>
+              </div>
+            </div>
+          </div>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>المنتج</th>
+                <th>الكمية</th>
+                <th>الوحدة</th>
+                <th>السعر</th>
+                <th>المجموع</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items.map(item => `
+                <tr>
+                  <td>${item.name}</td>
+                  <td>${item.quantity}</td>
+                  <td>${item.unit}</td>
+                  <td>${item.price.toFixed(3)} د.ك</td>
+                  <td>${(item.price * item.quantity).toFixed(3)} د.ك</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <div class="total-row">
+              <span>المجموع الفرعي:</span>
+              <span>${(order.total - order.deliveryPrice).toFixed(3)} د.ك</span>
+            </div>
+            <div class="total-row">
+              <span>رسوم التوصيل:</span>
+              <span>${order.deliveryPrice.toFixed(3)} د.ك</span>
+            </div>
+            <div class="total-row final-total">
+              <span>المجموع النهائي:</span>
+              <span>${order.total.toFixed(3)} د.ك</span>
+            </div>
+          </div>
+
+          ${order.customerInfo.notes ? `
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+              <strong>ملاحظات:</strong> ${order.customerInfo.notes}
+            </div>
+          ` : ''}
+
+          <div class="footer">
+            شكراً لتسوقكم معنا! نتطلع لخدمتكم مرة أخرى<br>
+            تم إنشاء هذه الفاتورة في: ${new Date().toLocaleString('ar-SA')}
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(invoiceHTML);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+      printWindow.close();
+    };
+  };
+
+  // Helper function to get status text
+  const getStatusText = (status: string) => {
+    const statusMap: {[key: string]: string} = {
+      'pending': 'قيد الانتظار',
+      'confirmed': 'مؤكد',
+      'preparing': 'قيد التحضير',
+      'delivering': 'قيد التوصيل',
+      'delivered': 'تم التوصيل',
+      'cancelled': 'ملغي'
+    };
+    return statusMap[status] || status;
   };
 
   const texts = {
@@ -612,7 +786,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   </select>
                 </td>
                 <td>
-                  <button className="action-btn view">عرض</button>
+                  <button 
+                    className="action-btn view"
+                    onClick={() => openViewOrder(order)}
+                  >
+                    عرض الفاتورة
+                  </button>
                 </td>
               </tr>
             ))}
@@ -1133,6 +1312,146 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   ✏️ تعديل البيانات
                 </button>
                 <button className="cancel-btn" onClick={closeViewUser}>
+                  ❌ إغلاق
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Order View Modal - Invoice */}
+        {showOrderViewModal && viewingOrder && (
+          <div className="modal-overlay" onClick={closeViewOrder}>
+            <div className="modal-content order-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>📋 فاتورة الطلب - {viewingOrder.orderNumber}</h3>
+                <button className="modal-close-btn" onClick={closeViewOrder}>✖️</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="invoice-container">
+                  {/* Order Header */}
+                  <div className="invoice-header">
+                    <div className="company-logo">
+                      <h2>🍎 فكهاني الكويت</h2>
+                      <p>أفضل الفواكه والخضار الطازجة</p>
+                    </div>
+                    <div className="invoice-details-header">
+                      <div className="detail-item">
+                        <span className="detail-label">رقم الطلب:</span>
+                        <span className="detail-value">{viewingOrder.orderNumber}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">التاريخ:</span>
+                        <span className="detail-value">{viewingOrder.date}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">الحالة:</span>
+                        <span className={`status-badge ${viewingOrder.status}`}>
+                          {getStatusText(viewingOrder.status)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer Information */}
+                  <div className="customer-info">
+                    <h4>🧑‍💼 بيانات العميل</h4>
+                    <div className="customer-details">
+                      <div className="detail-item">
+                        <span className="detail-label">👤 الاسم:</span>
+                        <span className="detail-value">{viewingOrder.customerInfo.name}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">📧 البريد:</span>
+                        <span className="detail-value">{viewingOrder.userEmail}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">📱 الهاتف:</span>
+                        <span className="detail-value">{viewingOrder.customerInfo.phone}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">🏠 العنوان:</span>
+                        <span className="detail-value">{viewingOrder.customerInfo.address}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">📍 المنطقة:</span>
+                        <span className="detail-value">{viewingOrder.customerInfo.area}</span>
+                      </div>
+                      {viewingOrder.customerInfo.notes && (
+                        <div className="detail-item notes">
+                          <span className="detail-label">📝 ملاحظات:</span>
+                          <span className="detail-value">{viewingOrder.customerInfo.notes}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Order Items */}
+                  <div className="order-items">
+                    <h4>🛒 تفاصيل الطلب</h4>
+                    <table className="items-table">
+                      <thead>
+                        <tr>
+                          <th>المنتج</th>
+                          <th>الكمية</th>
+                          <th>الوحدة</th>
+                          <th>السعر</th>
+                          <th>المجموع</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {viewingOrder.items.map((item, index) => (
+                          <tr key={index}>
+                            <td>{item.name}</td>
+                            <td>{item.quantity}</td>
+                            <td>{item.unit}</td>
+                            <td>{item.price.toFixed(3)} د.ك</td>
+                            <td>{(item.price * item.quantity).toFixed(3)} د.ك</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="order-summary">
+                    <div className="summary-row">
+                      <span>المجموع الفرعي:</span>
+                      <span>{(viewingOrder.total - viewingOrder.deliveryPrice).toFixed(3)} د.ك</span>
+                    </div>
+                    <div className="summary-row">
+                      <span>رسوم التوصيل:</span>
+                      <span>{viewingOrder.deliveryPrice.toFixed(3)} د.ك</span>
+                    </div>
+                    <div className="summary-row total">
+                      <span>المجموع النهائي:</span>
+                      <span>{viewingOrder.total.toFixed(3)} د.ك</span>
+                    </div>
+                    <div className="payment-info">
+                      <span>💳 طريقة الدفع: {viewingOrder.paymentMethod}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button 
+                  className="save-btn print-btn"
+                  onClick={() => printOrderInvoice(viewingOrder)}
+                >
+                  🖨️ طباعة الفاتورة
+                </button>
+                <button 
+                  className="save-btn"
+                  onClick={() => {
+                    closeViewOrder();
+                    // Could add email functionality here
+                  }}
+                >
+                  📧 إرسال بالإيميل
+                </button>
+                <button className="cancel-btn" onClick={closeViewOrder}>
                   ❌ إغلاق
                 </button>
               </div>
