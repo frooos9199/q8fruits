@@ -388,14 +388,17 @@ export class InvoiceService {
       
       const templateParams = {
         to_email: customerEmail,
+        from_email: process.env.REACT_APP_ADMIN_EMAIL || 'summit_kw@hotmail.com',
+        business_name: process.env.REACT_APP_BUSINESS_NAME || 'Q8 Fruit',
+        business_phone: process.env.REACT_APP_BUSINESS_PHONE || '98899426',
         customer_name: invoiceData.customerInfo.name,
         order_number: invoiceData.orderNumber,
         total_amount: `${invoiceData.total.toFixed(3)} ${texts.currency}`,
         invoice_date: invoiceData.date,
         attachment: base64PDF,
         message: invoiceData.language === 'ar' 
-          ? `مرحباً ${invoiceData.customerInfo.name}،\n\nشكراً لطلبكم من Q8 Fruit.\nستجدون الفاتورة مرفقة.\n\nمع تحياتنا`
-          : `Hello ${invoiceData.customerInfo.name},\n\nThank you for your order from Q8 Fruit.\nPlease find your invoice attached.\n\nBest regards`
+          ? `مرحباً ${invoiceData.customerInfo.name}،\n\nشكراً لطلبكم من Q8 Fruit.\nستجدون الفاتورة مرفقة.\n\nللاستفسار: واتساب ${process.env.REACT_APP_BUSINESS_PHONE || '98899426'}\n\nمع تحياتنا\nفريق Q8 Fruit`
+          : `Hello ${invoiceData.customerInfo.name},\n\nThank you for your order from Q8 Fruit.\nPlease find your invoice attached.\n\nFor inquiries: WhatsApp ${process.env.REACT_APP_BUSINESS_PHONE || '98899426'}\n\nBest regards\nQ8 Fruit Team`
       };
 
       // إعداد EmailJS (يجب تكوينه في البيئة)

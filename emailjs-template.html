@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q8 Fruit Invoice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', 'Segoe UI', Arial, sans-serif;
+            direction: rtl;
+            background-color: #f8fafc;
+            line-height: 1.6;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .header h2 {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px 20px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .order-details {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-right: 4px solid #22c55e;
+        }
+        
+        .order-details h3 {
+            color: #16a34a;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: #16a34a;
+        }
+        
+        .message {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #92400e;
+        }
+        
+        .footer {
+            background: #f3f4f6;
+            padding: 25px 20px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .contact-info {
+            margin: 10px 0;
+        }
+        
+        .contact-item {
+            display: inline-block;
+            margin: 5px 15px;
+            color: #4b5563;
+        }
+        
+        .footer-thanks {
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        
+        .attachment-note {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            color: #1e40af;
+        }
+        
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .detail-item {
+                flex-direction: column;
+                text-align: right;
+            }
+            
+            .contact-item {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🍎 Q8 Fruit 🥬</h1>
+            <h2>فاتورة شراء - Purchase Invoice</h2>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                مرحباً <strong>{{customer_name}}</strong>،
+            </div>
+            
+            <p>شكراً لطلبكم من Q8 Fruit! نحن سعداء بخدمتكم.</p>
+            
+            <!-- Order Details -->
+            <div class="order-details">
+                <h3>📋 تفاصيل الطلب:</h3>
+                
+                <div class="detail-item">
+                    <span><strong>رقم الطلب:</strong></span>
+                    <span>{{order_number}}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span><strong>تاريخ الطلب:</strong></span>
+                    <span>{{invoice_date}}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span><strong>المجموع النهائي:</strong></span>
+                    <span style="color: #16a34a; font-size: 18px;">{{total_amount}}</span>
+                </div>
+            </div>
+            
+            <!-- Attachment Note -->
+            <div class="attachment-note">
+                📎 <strong>ستجدون الفاتورة التفصيلية مرفقة مع هذا الإيميل</strong>
+            </div>
+            
+            <!-- Custom Message -->
+            <div class="message">
+                {{message}}
+            </div>
+            
+            <p>نتطلع لخدمتكم مرة أخرى قريباً!</p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="contact-info">
+                <div class="contact-item">
+                    📱 <strong>واتساب:</strong> {{business_phone}}
+                </div>
+                <div class="contact-item">
+                    📧 <strong>إيميل:</strong> {{from_email}}
+                </div>
+                <div class="contact-item">
+                    🌐 <strong>الموقع:</strong> q8fruit.com
+                </div>
+            </div>
+            
+            <div class="footer-thanks">
+                💚 شكراً لاختياركم Q8 Fruit 💚
+            </div>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 10px;">
+                جميع الحقوق محفوظة © 2025 Q8 Fruit
+            </p>
+        </div>
+    </div>
+</body>
+</html>
