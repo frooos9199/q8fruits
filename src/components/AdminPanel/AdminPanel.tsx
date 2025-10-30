@@ -78,13 +78,52 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // For forcing re-render
+  // Predefined units for quick selection
+  const predefinedUnits = [
+    { ar: 'كيلو', en: 'kg' },
+    { ar: 'نصف كيلو', en: '500g' },
+    { ar: 'ربع كيلو', en: '250g' },
+    { ar: 'حبة', en: 'piece' },
+    { ar: 'سحارة', en: 'bunch' },
+    { ar: 'علبة', en: 'box' },
+    { ar: 'كيس', en: 'bag' },
+    { ar: 'باكيت', en: 'packet' },
+    { ar: 'جرام', en: 'gram' },
+    { ar: 'لتر', en: 'liter' }
+  ];
+
   const [newProduct, setNewProduct] = useState({
     name: { ar: '', en: '' },
     category: 'fruits' as ProductCategory,
     units: [{ id: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0, isDefault: true }],
     image: '',
+    images: [] as string[], // Support for multiple images
     description: { ar: '', en: '' },
-    isPublished: false
+    tags: [] as string[], // Product tags
+    isPublished: false,
+    stock: 100,
+    minStock: 10, // Minimum stock alert
+    barcode: '', // Product barcode
+    supplier: '', // Supplier name
+    origin: { ar: '', en: '' }, // Country of origin
+    nutritionFacts: {
+      calories: '',
+      protein: '',
+      carbs: '',
+      fat: '',
+      fiber: '',
+      vitamins: ''
+    },
+    storageInstructions: { ar: '', en: '' },
+    isOrganic: false,
+    isFresh: true,
+    shelfLife: '', // Shelf life in days
+    discount: {
+      enabled: false,
+      percentage: 0,
+      startDate: '',
+      endDate: ''
+    }
   });
 
   // Delivery state
@@ -584,18 +623,53 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Add new product
   const handleAddProduct = () => {
-    if (!newProduct.name.ar || !newProduct.name.en || !newProduct.units[0].price) {
-      alert('يرجى ملء جميع الحقول المطلوبة');
+    // Validation: Check if product has required fields
+    if (!newProduct.name.ar.trim() || !newProduct.name.en.trim()) {
+      alert('يرجى إدخال اسم المنتج باللغتين العربية والإنجليزية');
       return;
+    }
+
+    if (newProduct.units.length === 0) {
+      alert('يرجى إضافة وحدة واحدة على الأقل للمنتج');
+      return;
+    }
+
+    // Check if at least one unit has a name and price
+    const validUnits = newProduct.units.filter(unit => 
+      unit.unit.ar.trim() && unit.unit.en.trim() && unit.price > 0
+    );
+
+    if (validUnits.length === 0) {
+      alert('يرجى إضافة وحدة واحدة صحيحة على الأقل (مع اسم وسعر)');
+      return;
+    }
+
+    // Ensure there's a default unit
+    const hasDefaultUnit = newProduct.units.some(unit => unit.isDefault);
+    if (!hasDefaultUnit && validUnits.length > 0) {
+      // Set the first valid unit as default
+      newProduct.units[0].isDefault = true;
     }
 
     const productToAdd = {
       name: newProduct.name,
       category: newProduct.category,
       units: newProduct.units,
+      image: newProduct.image,
       images: newProduct.image ? [newProduct.image] : [],
+      tags: newProduct.tags,
       description: newProduct.description,
-      stock: 100, // Default stock
+      stock: newProduct.stock,
+      minStock: newProduct.minStock,
+      barcode: newProduct.barcode,
+      supplier: newProduct.supplier,
+      origin: newProduct.origin,
+      nutritionFacts: newProduct.nutritionFacts,
+      storageInstructions: newProduct.storageInstructions,
+      isOrganic: newProduct.isOrganic,
+      isFresh: newProduct.isFresh,
+      shelfLife: newProduct.shelfLife,
+      discount: newProduct.discount,
       isPublished: newProduct.isPublished
     };
 
@@ -606,8 +680,33 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       category: 'fruits' as ProductCategory,
       units: [{ id: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0, isDefault: true }],
       image: '',
+      images: [],
       description: { ar: '', en: '' },
-      isPublished: false
+      tags: [],
+      isPublished: false,
+      stock: 100,
+      minStock: 10,
+      barcode: '',
+      supplier: '',
+      origin: { ar: '', en: '' },
+      nutritionFacts: {
+        calories: '',
+        protein: '',
+        carbs: '',
+        fat: '',
+        fiber: '',
+        vitamins: ''
+      },
+      storageInstructions: { ar: '', en: '' },
+      isOrganic: false,
+      isFresh: true,
+      shelfLife: '',
+      discount: {
+        enabled: false,
+        percentage: 0,
+        startDate: '',
+        endDate: ''
+      }
     });
     alert('تم إضافة المنتج بنجاح');
   };
@@ -1758,37 +1857,55 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 <div className="form-group">
                   <label>الوحدات والأسعار:</label>
+                  <p className="form-hint">يمكنك إضافة وحدات متعددة للمنتج الواحد مع أسعار مختلفة (مثال: كيلو، نصف كيلو، حبة)</p>
                   <div className="units-container">
                     {newProduct.units.map((unit, index) => (
                       <div key={index} className="unit-row">
                         <div className="unit-inputs">
-                          <input
-                            type="text"
-                            placeholder="الوحدة (عربي)"
-                            value={unit.unit.ar}
-                            onChange={(e) => setNewProduct(prev => ({
-                              ...prev,
-                              units: prev.units.map((u, i) => 
-                                i === index ? { ...u, unit: { ...u.unit, ar: e.target.value } } : u
-                              )
-                            }))}
-                            className="unit-input"
-                          />
-                          <input
-                            type="text"
-                            placeholder="الوحدة (إنجليزي)"
-                            value={unit.unit.en}
-                            onChange={(e) => setNewProduct(prev => ({
-                              ...prev,
-                              units: prev.units.map((u, i) => 
-                                i === index ? { ...u, unit: { ...u.unit, en: e.target.value } } : u
-                              )
-                            }))}
-                            className="unit-input"
-                          />
+                          <div className="unit-input-group">
+                            <input
+                              type="text"
+                              placeholder="الوحدة (عربي) - مثال: كيلو"
+                              value={unit.unit.ar}
+                              onChange={(e) => setNewProduct(prev => ({
+                                ...prev,
+                                units: prev.units.map((u, i) => 
+                                  i === index ? { ...u, unit: { ...u.unit, ar: e.target.value } } : u
+                                )
+                              }))}
+                              className="unit-input"
+                              list={`predefined-units-ar-${index}`}
+                            />
+                            <datalist id={`predefined-units-ar-${index}`}>
+                              {predefinedUnits.map((predUnit, idx) => (
+                                <option key={idx} value={predUnit.ar} />
+                              ))}
+                            </datalist>
+                          </div>
+                          <div className="unit-input-group">
+                            <input
+                              type="text"
+                              placeholder="Unit (English) - Ex: kg"
+                              value={unit.unit.en}
+                              onChange={(e) => setNewProduct(prev => ({
+                                ...prev,
+                                units: prev.units.map((u, i) => 
+                                  i === index ? { ...u, unit: { ...u.unit, en: e.target.value } } : u
+                                )
+                              }))}
+                              className="unit-input"
+                              list={`predefined-units-en-${index}`}
+                            />
+                            <datalist id={`predefined-units-en-${index}`}>
+                              {predefinedUnits.map((predUnit, idx) => (
+                                <option key={idx} value={predUnit.en} />
+                              ))}
+                            </datalist>
+                          </div>
                           <input
                             type="number"
                             step="0.001"
+                            min="0"
                             placeholder="السعر"
                             value={unit.price}
                             onChange={(e) => setNewProduct(prev => ({
@@ -1814,7 +1931,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                                 }))
                               }))}
                             />
-                            افتراضي
+                            وحدة افتراضية
                           </label>
                           {newProduct.units.length > 1 && (
                             <button
@@ -1824,8 +1941,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                                 units: prev.units.filter((_, i) => i !== index)
                               }))}
                               className="remove-unit-btn"
+                              title="حذف هذه الوحدة"
                             >
-                              ❌
+                              🗑️
                             </button>
                           )}
                         </div>
@@ -1846,6 +1964,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     >
                       ➕ إضافة وحدة جديدة
                     </button>
+                    
+                    <div className="quick-units">
+                      <p className="quick-units-label">إضافة سريعة للوحدات الشائعة:</p>
+                      <div className="quick-units-buttons">
+                        {[
+                          { ar: 'كيلو', en: 'kg' },
+                          { ar: 'حبة', en: 'piece' },
+                          { ar: 'سحارة', en: 'bunch' },
+                          { ar: 'علبة', en: 'box' }
+                        ].map((quickUnit, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setNewProduct(prev => ({
+                              ...prev,
+                              units: [...prev.units, {
+                                id: Date.now() + idx,
+                                unit: quickUnit,
+                                price: 0,
+                                isDefault: false
+                              }]
+                            }))}
+                            className="quick-unit-btn"
+                          >
+                            {quickUnit.ar}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="form-group">
@@ -1912,6 +2059,269 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     placeholder="Product description in English"
                   />
                 </div>
+
+                {/* العلامات */}
+                <div className="form-group">
+                  <label>العلامات:</label>
+                  <input
+                    type="text"
+                    placeholder="اكتب العلامات وافصل بينها بفاصلة"
+                    value={newProduct.tags.join(', ')}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
+                    }))}
+                  />
+                </div>
+
+                {/* الرمز الشريطي والمورد */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>الرمز الشريطي:</label>
+                    <input
+                      type="text"
+                      placeholder="ادخل الرمز الشريطي"
+                      value={newProduct.barcode}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, barcode: e.target.value }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>المورد:</label>
+                    <input
+                      type="text"
+                      placeholder="اسم المورد"
+                      value={newProduct.supplier}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, supplier: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {/* المخزون */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>الكمية المتوفرة:</label>
+                    <input
+                      type="number"
+                      placeholder="الكمية الحالية"
+                      value={newProduct.stock}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>الحد الأدنى للمخزون:</label>
+                    <input
+                      type="number"
+                      placeholder="الحد الأدنى"
+                      value={newProduct.minStock}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, minStock: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+
+                {/* بلد المنشأ */}
+                <div className="form-group">
+                  <label>بلد المنشأ:</label>
+                  <div className="form-row">
+                    <input
+                      type="text"
+                      placeholder="بلد المنشأ بالعربية"
+                      value={newProduct.origin.ar}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        origin: { ...prev.origin, ar: e.target.value }
+                      }))}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Country of Origin in English"
+                      value={newProduct.origin.en}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        origin: { ...prev.origin, en: e.target.value }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                {/* مدة الصلاحية */}
+                <div className="form-group">
+                  <label>مدة الصلاحية:</label>
+                  <input
+                    type="text"
+                    placeholder="مثال: 7 أيام، أسبوعين، شهر"
+                    value={newProduct.shelfLife}
+                    onChange={(e) => setNewProduct(prev => ({ ...prev, shelfLife: e.target.value }))}
+                  />
+                </div>
+
+                {/* تعليمات التخزين */}
+                <div className="form-group">
+                  <label>تعليمات التخزين:</label>
+                  <div className="form-row">
+                    <textarea
+                      placeholder="تعليمات التخزين بالعربية"
+                      value={newProduct.storageInstructions.ar}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        storageInstructions: { ...prev.storageInstructions, ar: e.target.value }
+                      }))}
+                    />
+                    <textarea
+                      placeholder="Storage Instructions in English"
+                      value={newProduct.storageInstructions.en}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        storageInstructions: { ...prev.storageInstructions, en: e.target.value }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                {/* خصائص المنتج */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={newProduct.isOrganic}
+                        onChange={(e) => setNewProduct(prev => ({ ...prev, isOrganic: e.target.checked }))}
+                      />
+                      منتج عضوي
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={newProduct.isFresh}
+                        onChange={(e) => setNewProduct(prev => ({ ...prev, isFresh: e.target.checked }))}
+                      />
+                      منتج طازج
+                    </label>
+                  </div>
+                </div>
+
+                {/* القيم الغذائية */}
+                <div className="form-group">
+                  <label>القيم الغذائية (لكل 100 جرام):</label>
+                  <div className="nutrition-grid">
+                    <input
+                      type="text"
+                      placeholder="السعرات الحرارية"
+                      value={newProduct.nutritionFacts.calories}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        nutritionFacts: { ...prev.nutritionFacts, calories: e.target.value }
+                      }))}
+                    />
+                    <input
+                      type="text"
+                      placeholder="البروتين (جم)"
+                      value={newProduct.nutritionFacts.protein}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        nutritionFacts: { ...prev.nutritionFacts, protein: e.target.value }
+                      }))}
+                    />
+                    <input
+                      type="text"
+                      placeholder="الكربوهيدرات (جم)"
+                      value={newProduct.nutritionFacts.carbs}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        nutritionFacts: { ...prev.nutritionFacts, carbs: e.target.value }
+                      }))}
+                    />
+                    <input
+                      type="text"
+                      placeholder="الدهون (جم)"
+                      value={newProduct.nutritionFacts.fat}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        nutritionFacts: { ...prev.nutritionFacts, fat: e.target.value }
+                      }))}
+                    />
+                    <input
+                      type="text"
+                      placeholder="الألياف (جم)"
+                      value={newProduct.nutritionFacts.fiber}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        nutritionFacts: { ...prev.nutritionFacts, fiber: e.target.value }
+                      }))}
+                    />
+                    <input
+                      type="text"
+                      placeholder="الفيتامينات"
+                      value={newProduct.nutritionFacts.vitamins}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        nutritionFacts: { ...prev.nutritionFacts, vitamins: e.target.value }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                {/* نظام الخصم */}
+                <div className="form-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={newProduct.discount.enabled}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        discount: { ...prev.discount, enabled: e.target.checked }
+                      }))}
+                    />
+                    تفعيل نظام الخصم
+                  </label>
+                  
+                  {newProduct.discount.enabled && (
+                    <div className="discount-settings">
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>نسبة الخصم (%):</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            placeholder="نسبة الخصم"
+                            value={newProduct.discount.percentage}
+                            onChange={(e) => setNewProduct(prev => ({
+                              ...prev,
+                              discount: { ...prev.discount, percentage: parseFloat(e.target.value) || 0 }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>تاريخ بداية الخصم:</label>
+                          <input
+                            type="date"
+                            value={newProduct.discount.startDate}
+                            onChange={(e) => setNewProduct(prev => ({
+                              ...prev,
+                              discount: { ...prev.discount, startDate: e.target.value }
+                            }))}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>تاريخ انتهاء الخصم:</label>
+                          <input
+                            type="date"
+                            value={newProduct.discount.endDate}
+                            onChange={(e) => setNewProduct(prev => ({
+                              ...prev,
+                              discount: { ...prev.discount, endDate: e.target.value }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="form-group">
                   <label className="checkbox-label">
                     <input

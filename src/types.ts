@@ -19,11 +19,34 @@ export interface Product {
   name: MultiLanguageText;
   category: ProductCategory;
   units: ProductUnit[]; // وحدات متعددة مع أسعار مختلفة
+  image: string; // الصورة الرئيسية (للتوافق مع النظام الحالي)
   images: string[]; // مصفوفة من الصور
-  tags?: string[]; // شارات مخصصة يمكن للأدمن إضافتها لكل منتج (مث: "بدون حب", "فاكهه موسمية")
-  description?: MultiLanguageText;
+  tags: string[]; // شارات مخصصة يمكن للأدمن إضافتها لكل منتج (مث: "بدون حب", "فاكهه موسمية")
+  description: MultiLanguageText;
   isPublished: boolean;
   stock: number;
+  minStock: number; // الحد الأدنى للمخزون
+  barcode: string; // الرمز الشريطي
+  supplier: string; // اسم المورد
+  origin: MultiLanguageText; // بلد المنشأ
+  nutritionFacts: {
+    calories: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+    fiber: string;
+    vitamins: string;
+  };
+  storageInstructions: MultiLanguageText; // تعليمات التخزين
+  isOrganic: boolean; // منتج عضوي
+  isFresh: boolean; // منتج طازج
+  shelfLife: string; // مدة الصلاحية
+  discount: {
+    enabled: boolean;
+    percentage: number;
+    startDate: string;
+    endDate: string;
+  };
 }
 
 export interface CartItem {

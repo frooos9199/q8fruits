@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Language } from '../../types';
+import { Language, Product } from '../../types';
 import { InvoiceService, InvoiceData } from '../../services/InvoiceService.ts';
 import './AdminDashboard.css';
 
@@ -329,11 +329,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ language }) => {
               price: product.price,
               isDefault: true
             }],
-            images: [''],
+            images: [],
             isPublished: true,
             stock: 0,
             tags: []
-          },
+          } as unknown as Product,
           selectedUnit: {
             id: 1,
             unit: product.unit,

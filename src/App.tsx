@@ -76,7 +76,7 @@ const App: React.FC = () => {
   }, []); // Empty dependency array to run only once
 
   // Sample products data - moved to separate variable
-  const defaultProducts: Product[] = [
+  const defaultProducts = [
     {
       id: 1,
       name: { ar: 'تفاح أحمر', en: 'Red Apple' },
@@ -86,13 +86,37 @@ const App: React.FC = () => {
         { id: 2, unit: { ar: 'نصف كيلو', en: '500g' }, price: 0.750, isDefault: false },
         { id: 3, unit: { ar: 'حبة', en: 'piece' }, price: 0.100, isDefault: false }
       ],
+      image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300',
       images: [
         'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300',
         'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=300'
       ],
       tags: ['بدون حب', 'جودة ممتازة'],
+      description: { ar: 'تفاح أحمر طازج وعالي الجودة', en: 'Fresh high-quality red apples' },
       isPublished: true,
-      stock: 50
+      stock: 50,
+      minStock: 10,
+      barcode: '',
+      supplier: '',
+      origin: { ar: 'لبنان', en: 'Lebanon' },
+      nutritionFacts: {
+        calories: '52',
+        protein: '0.3',
+        carbs: '14',
+        fat: '0.2',
+        fiber: '2.4',
+        vitamins: 'فيتامين C'
+      },
+      storageInstructions: { ar: 'يحفظ في الثلاجة', en: 'Store in refrigerator' },
+      isOrganic: false,
+      isFresh: true,
+      shelfLife: '7-10 أيام',
+      discount: {
+        enabled: false,
+        percentage: 0,
+        startDate: '',
+        endDate: ''
+      }
     },
     {
       id: 2,
@@ -417,7 +441,7 @@ const App: React.FC = () => {
   ];
 
   // Products state
-  const [products, setProducts] = useState<Product[]>(defaultProducts);
+  const [products, setProducts] = useState<Product[]>(defaultProducts as Product[]);
 
   const addToCart = (product: Product, selectedUnit: ProductUnit, quantity: number) => {
     const existingItem = cartItems.find(item => 
