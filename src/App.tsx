@@ -37,7 +37,27 @@ const App: React.FC = () => {
     setUserType(storedUserType);
     setUserName(storedUserName);
     setUserEmail(storedUserEmail);
+
+    // Load cart items from localStorage
+    try {
+      const savedCartItems = localStorage.getItem('cartItems');
+      if (savedCartItems) {
+        const parsedCartItems = JSON.parse(savedCartItems);
+        setCartItems(parsedCartItems);
+      }
+    } catch (error) {
+      console.error('Error loading cart from localStorage:', error);
+    }
   }, []);
+
+  // Save cart items to localStorage whenever cartItems changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+  }, [cartItems]);
 
   // Sample products data
   const [products, setProducts] = useState<Product[]>([
@@ -412,6 +432,12 @@ const App: React.FC = () => {
 
   const clearCart = () => {
     setCartItems([]);
+    // Also clear from localStorage explicitly
+    try {
+      localStorage.removeItem('cartItems');
+    } catch (error) {
+      console.error('Error clearing cart from localStorage:', error);
+    }
   };
 
   // Product management functions
