@@ -526,6 +526,62 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
+  // Handle image upload for new product
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        alert('يرجى اختيار ملف صورة صالح');
+        return;
+      }
+
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('حجم الصورة كبير جداً. يرجى اختيار صورة أصغر من 5 ميجابايت');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string;
+        setNewProduct(prev => ({
+          ...prev,
+          image: base64String
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle image upload for editing product
+  const handleEditImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        alert('يرجى اختيار ملف صورة صالح');
+        return;
+      }
+
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('حجم الصورة كبير جداً. يرجى اختيار صورة أصغر من 5 ميجابايت');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string;
+        setEditingProduct(prev => prev ? ({
+          ...prev,
+          images: [base64String]
+        }) : null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Add new product
   const handleAddProduct = () => {
     if (!newProduct.name.ar || !newProduct.name.en || !newProduct.prices[0].price) {
@@ -1753,15 +1809,45 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   />
                 </div>
                 <div className="form-group">
-                  <label>رابط الصورة:</label>
+                  <label>الصورة:</label>
+                  <div className="image-upload-container">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="image-upload-input"
+                      id="new-product-image"
+                    />
+                    <label htmlFor="new-product-image" className="image-upload-label">
+                      📁 اختر صورة من الجهاز
+                    </label>
+                    {newProduct.image && (
+                      <div className="image-preview">
+                        <img 
+                          src={newProduct.image} 
+                          alt="معاينة الصورة" 
+                          className="preview-image"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setNewProduct(prev => ({ ...prev, image: '' }))}
+                          className="remove-image-btn"
+                        >
+                          ❌ إزالة الصورة
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="or-divider">أو</div>
                   <input
                     type="url"
-                    value={newProduct.image}
+                    value={newProduct.image.startsWith('data:') ? '' : newProduct.image}
                     onChange={(e) => setNewProduct(prev => ({
                       ...prev,
                       image: e.target.value
                     }))}
-                    placeholder="https://..."
+                    placeholder="أدخل رابط الصورة (https://...)"
+                    className="url-input"
                   />
                 </div>
                 <div className="form-group">
@@ -1907,15 +1993,45 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   />
                 </div>
                 <div className="form-group">
-                  <label>رابط الصورة:</label>
+                  <label>الصورة:</label>
+                  <div className="image-upload-container">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditImageUpload}
+                      className="image-upload-input"
+                      id="edit-product-image"
+                    />
+                    <label htmlFor="edit-product-image" className="image-upload-label">
+                      📁 اختر صورة من الجهاز
+                    </label>
+                    {editingProduct.images[0] && (
+                      <div className="image-preview">
+                        <img 
+                          src={editingProduct.images[0]} 
+                          alt="معاينة الصورة" 
+                          className="preview-image"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setEditingProduct(prev => prev ? ({ ...prev, images: [''] }) : null)}
+                          className="remove-image-btn"
+                        >
+                          ❌ إزالة الصورة
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="or-divider">أو</div>
                   <input
                     type="url"
-                    value={editingProduct.images[0] || ''}
+                    value={editingProduct.images[0]?.startsWith('data:') ? '' : (editingProduct.images[0] || '')}
                     onChange={(e) => setEditingProduct(prev => prev ? ({
                       ...prev,
                       images: [e.target.value]
                     }) : null)}
-                    placeholder="https://..."
+                    placeholder="أدخل رابط الصورة (https://...)"
+                    className="url-input"
                   />
                 </div>
                 <div className="form-group">
