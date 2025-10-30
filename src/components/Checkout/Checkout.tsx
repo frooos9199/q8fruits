@@ -32,6 +32,10 @@ const Checkout: React.FC<CheckoutProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [sendOptions, setSendOptions] = useState({
+    sendEmail: false,
+    sendWhatsApp: false,
+  });
 
   // Load saved user data on component mount
   useEffect(() => {
@@ -78,6 +82,10 @@ const Checkout: React.FC<CheckoutProps> = ({
       orderSuccess: 'تم تأكيد طلبكم بنجاح!',
       orderNumber: 'رقم الطلب',
       downloadInvoice: 'تحميل الفاتورة',
+      sendEmail: 'إرسال الفاتورة للإيميل',
+      sendWhatsApp: 'إرسال الفاتورة عبر واتساب',
+      emailSent: 'تم إرسال الفاتورة للإيميل',
+      whatsappSent: 'سيتم فتح واتساب لإرسال الفاتورة',
       newOrder: 'طلب جديد',
       close: 'إغلاق',
       required: 'مطلوب',
@@ -112,6 +120,10 @@ const Checkout: React.FC<CheckoutProps> = ({
       orderSuccess: 'Your order has been confirmed successfully!',
       orderNumber: 'Order Number',
       downloadInvoice: 'Download Invoice',
+      sendEmail: 'Send Invoice via Email',
+      sendWhatsApp: 'Send Invoice via WhatsApp',
+      emailSent: 'Invoice sent to email successfully',
+      whatsappSent: 'WhatsApp will open to send invoice',
       newOrder: 'New Order',
       close: 'Close',
       required: 'Required',
@@ -176,6 +188,7 @@ const Checkout: React.FC<CheckoutProps> = ({
           address: customerInfo.address,
           area: customerInfo.area,
           notes: customerInfo.notes,
+          email: customerInfo.email,
         },
         items,
         subtotal,
@@ -185,11 +198,12 @@ const Checkout: React.FC<CheckoutProps> = ({
         language,
       };
 
-      // Generate and send invoice
+      // Generate and send invoice automatically
       const invoiceService = InvoiceService.getInstance();
       
+      // Send via email if email is provided
       if (customerInfo.email) {
-        await invoiceService.sendInvoiceEmail(invoiceData, customerInfo.email);
+        await invoiceService.sendInvoiceByEmail(invoiceData, customerInfo.email);
       }
 
       // Simulate order processing delay
@@ -215,6 +229,7 @@ const Checkout: React.FC<CheckoutProps> = ({
         address: customerInfo.address,
         area: customerInfo.area,
         notes: customerInfo.notes,
+        email: customerInfo.email,
       },
       items,
       subtotal,
@@ -226,6 +241,76 @@ const Checkout: React.FC<CheckoutProps> = ({
 
     const invoiceService = InvoiceService.getInstance();
     await invoiceService.downloadInvoice(invoiceData);
+  };
+
+  const handleSendEmail = async () => {
+    if (!customerInfo.email) {
+      alert(language === 'ar' ? 'يرجى إدخال البريد الإلكتروني' : 'Please enter email address');
+      return;
+    }
+
+    try {
+      const invoiceData: InvoiceData = {
+        orderNumber,
+        date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+        customerInfo: {
+          name: customerInfo.name,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+          area: customerInfo.area,
+          notes: customerInfo.notes,
+          email: customerInfo.email,
+        },
+        items,
+        subtotal,
+        deliveryPrice,
+        total,
+        paymentMethod,
+        language,
+      };
+
+      const invoiceService = InvoiceService.getInstance();
+      await invoiceService.sendInvoiceByEmail(invoiceData, customerInfo.email);
+      alert(currentTexts.emailSent);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert(language === 'ar' ? 'حدث خطأ في إرسال الإيميل' : 'Error sending email');
+    }
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!customerInfo.phone) {
+      alert(language === 'ar' ? 'يرجى إدخال رقم الهاتف' : 'Please enter phone number');
+      return;
+    }
+
+    try {
+      const invoiceData: InvoiceData = {
+        orderNumber,
+        date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+        customerInfo: {
+          name: customerInfo.name,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+          area: customerInfo.area,
+          notes: customerInfo.notes,
+          email: customerInfo.email,
+        },
+        items,
+        subtotal,
+        deliveryPrice,
+        total,
+        paymentMethod,
+        language,
+      };
+
+      const invoiceService = InvoiceService.getInstance();
+      await invoiceService.sendInvoiceViaWhatsApp(invoiceData, customerInfo.phone);
+      alert(currentTexts.whatsappSent);
+    } catch (error) {
+      console.error('Error sending WhatsApp:', error);
+      alert(language === 'ar' ? 'حدث خطأ في إرسال الواتساب' : 'Error sending WhatsApp');
+    }
   };
 
   const handleNewOrder = () => {
@@ -248,6 +333,19 @@ const Checkout: React.FC<CheckoutProps> = ({
               <button className="download-btn" onClick={handleDownloadInvoice}>
                 📄 {currentTexts.downloadInvoice}
               </button>
+              
+              {customerInfo.email && (
+                <button className="email-btn" onClick={handleSendEmail}>
+                  📧 {currentTexts.sendEmail}
+                </button>
+              )}
+              
+              {customerInfo.phone && (
+                <button className="whatsapp-btn" onClick={handleSendWhatsApp}>
+                  📱 {currentTexts.sendWhatsApp}
+                </button>
+              )}
+              
               <button className="new-order-btn" onClick={handleNewOrder}>
                 🛒 {currentTexts.newOrder}
               </button>

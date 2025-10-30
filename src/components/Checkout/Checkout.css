@@ -281,6 +281,8 @@
 }
 
 .download-btn,
+.email-btn,
+.whatsapp-btn,
 .new-order-btn {
   padding: 0.75rem 1.5rem;
   border-radius: 10px;
@@ -300,6 +302,28 @@
 
 .download-btn:hover {
   background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.email-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+}
+
+.email-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+
+.whatsapp-btn {
+  background: #25d366;
+  color: white;
+  border: none;
+}
+
+.whatsapp-btn:hover {
+  background: #128c7e;
   transform: translateY(-2px);
 }
 

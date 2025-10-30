@@ -12,6 +12,7 @@ export interface InvoiceData {
     address: string;
     area: string;
     notes?: string;
+    email?: string;
   };
   items: CartItem[];
   subtotal: number;
@@ -34,7 +35,7 @@ export class InvoiceService {
   private getTexts(language: Language) {
     return {
       ar: {
-        title: 'فكهاني الكويت',
+        title: 'Q8 Fruit',
         subtitle: 'فاتورة شراء',
         invoice: 'فاتورة رقم',
         date: 'التاريخ',
@@ -56,11 +57,11 @@ export class InvoiceService {
         cash: 'دفع نقدي',
         link: 'دفع إلكتروني',
         currency: 'د.ك',
-        thankYou: 'شكراً لاختياركم فكهاني الكويت',
-        contact: 'للاستفسار: واتساب 99999999'
+        thankYou: 'شكراً لاختياركم Q8 Fruit',
+        contact: 'للاستفسار: واتساب 98899426'
       },
       en: {
-        title: 'Fakahani Kuwait',
+        title: 'Q8 Fruit',
         subtitle: 'Purchase Invoice',
         invoice: 'Invoice No.',
         date: 'Date',
@@ -82,8 +83,8 @@ export class InvoiceService {
         cash: 'Cash Payment',
         link: 'Electronic Payment',
         currency: 'KWD',
-        thankYou: 'Thank you for choosing Fakahani Kuwait',
-        contact: 'For inquiries: WhatsApp 99999999'
+        thankYou: 'Thank you for choosing Q8 Fruit',
+        contact: 'For inquiries: WhatsApp 98899426'
       }
     };
   }
@@ -375,6 +376,134 @@ export class InvoiceService {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+  }
+
+  // إرسال الفاتورة عبر الإيميل
+  async sendInvoiceByEmail(invoiceData: InvoiceData, customerEmail: string): Promise<void> {
+    try {
+      const pdfBlob = await this.generatePDF(invoiceData);
+      const base64PDF = await this.blobToBase64(pdfBlob);
+      
+      const texts = this.getTexts(invoiceData.language)[invoiceData.language];
+      
+      const templateParams = {
+        to_email: customerEmail,
+        customer_name: invoiceData.customerInfo.name,
+        order_number: invoiceData.orderNumber,
+        total_amount: `${invoiceData.total.toFixed(3)} ${texts.currency}`,
+        invoice_date: invoiceData.date,
+        attachment: base64PDF,
+        message: invoiceData.language === 'ar' 
+          ? `مرحباً ${invoiceData.customerInfo.name}،\n\nشكراً لطلبكم من Q8 Fruit.\nستجدون الفاتورة مرفقة.\n\nمع تحياتنا`
+          : `Hello ${invoiceData.customerInfo.name},\n\nThank you for your order from Q8 Fruit.\nPlease find your invoice attached.\n\nBest regards`
+      };
+
+      // إعداد EmailJS (يجب تكوينه في البيئة)
+      await emailjs.send(
+        process.env.REACT_APP_EMAILJS_SERVICE_ID || 'your_service_id',
+        process.env.REACT_APP_EMAILJS_TEMPLATE_ID || 'your_template_id',
+        templateParams,
+        process.env.REACT_APP_EMAILJS_PUBLIC_KEY || 'your_public_key'
+      );
+      
+      console.log('Invoice sent successfully via email');
+    } catch (error) {
+      console.error('Error sending invoice email:', error);
+      throw error;
+    }
+  }
+
+  // إرسال الفاتورة عبر الواتساب
+  async sendInvoiceViaWhatsApp(invoiceData: InvoiceData, phoneNumber: string): Promise<void> {
+    try {
+      const pdfBlob = await this.generatePDF(invoiceData);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      const texts = this.getTexts(invoiceData.language)[invoiceData.language];
+      
+      const message = invoiceData.language === 'ar'
+        ? `مرحباً ${invoiceData.customerInfo.name}! ✅
+
+🧾 فاتورة رقم: ${invoiceData.orderNumber}
+📅 التاريخ: ${invoiceData.date}
+💰 المجموع: ${invoiceData.total.toFixed(3)} ${texts.currency}
+
+شكراً لاختياركم Q8 Fruit 🍎🥬
+الفاتورة مرفقة أدناه 👇`
+        : `Hello ${invoiceData.customerInfo.name}! ✅
+
+🧾 Invoice No: ${invoiceData.orderNumber}
+📅 Date: ${invoiceData.date}
+💰 Total: ${invoiceData.total.toFixed(3)} ${texts.currency}
+
+Thank you for choosing Q8 Fruit 🍎🥬
+Invoice attached below 👇`;
+
+      // تنظيف رقم الهاتف
+      const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
+      const whatsappPhone = cleanPhone.startsWith('965') ? cleanPhone : `965${cleanPhone}`;
+      
+      // فتح WhatsApp مع الرسالة
+      const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
+      
+      // محاولة تحميل الـ PDF تلقائياً
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `Invoice-${invoiceData.orderNumber}.pdf`;
+      link.click();
+      
+      // فتح WhatsApp
+      window.open(whatsappUrl, '_blank');
+      
+      // تنظيف الـ URL بعد 5 ثوان
+      setTimeout(() => {
+        URL.revokeObjectURL(pdfUrl);
+      }, 5000);
+      
+    } catch (error) {
+      console.error('Error sending invoice via WhatsApp:', error);
+      throw error;
+    }
+  }
+
+  // دالة موحدة لإنشاء وإرسال الفاتورة
+  async generateAndSendInvoice(
+    invoiceData: InvoiceData, 
+    options: {
+      sendEmail?: boolean;
+      sendWhatsApp?: boolean;
+      customerEmail?: string;
+    } = {}
+  ): Promise<void> {
+    try {
+      // التحقق من صحة البيانات
+      const validatedData = this.validateInvoiceData(invoiceData);
+      
+      // إنشاء الفاتورة
+      const pdfBlob = await this.generatePDF(validatedData);
+      
+      // تحميل الفاتورة
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${validatedData.orderNumber}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      // إرسال عبر الإيميل إذا كان مطلوباً
+      if (options.sendEmail && options.customerEmail) {
+        await this.sendInvoiceByEmail(validatedData, options.customerEmail);
+      }
+
+      // إرسال عبر الواتساب إذا كان مطلوباً
+      if (options.sendWhatsApp) {
+        await this.sendInvoiceViaWhatsApp(validatedData, validatedData.customerInfo.phone);
+      }
+
+    } catch (error) {
+      console.error('Error in generateAndSendInvoice:', error);
+      throw error;
+    }
   }
 }
 
