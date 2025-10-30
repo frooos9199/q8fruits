@@ -33,6 +33,7 @@ const Header: React.FC<HeaderProps> = ({
   const [clickCount, setClickCount] = React.useState(0);
   const [lastClickTime, setLastClickTime] = React.useState(0);
   const [showProfile, setShowProfile] = React.useState(false);
+  const [showFullProfile, setShowFullProfile] = React.useState(false);
 
   const handleTitleClick = () => {
     if (!isLoggedIn) {
@@ -157,6 +158,11 @@ const Header: React.FC<HeaderProps> = ({
                       setShowProfile(false);
                       onAdminClick();
                     } : undefined}
+                    isDropdown={true}
+                    onOpenFullProfile={() => {
+                      setShowProfile(false);
+                      setShowFullProfile(true);
+                    }}
                   />
                 </div>
               )}
@@ -169,6 +175,30 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </nav>
       </div>
+      
+      {/* Full Profile Modal */}
+      {showFullProfile && (
+        <div className="profile-modal-overlay" onClick={() => setShowFullProfile(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <UserProfile
+              language={language}
+              userType={userType!}
+              userName={userName!}
+              userEmail={userEmail!}
+              onLogout={() => {
+                setShowFullProfile(false);
+                onLogout();
+              }}
+              onAdminPanel={userType === 'admin' ? () => {
+                setShowFullProfile(false);
+                onAdminClick();
+              } : undefined}
+              isDropdown={false}
+              onClose={() => setShowFullProfile(false)}
+            />
+          </div>
+        </div>
+      )}
     </header>
   );
 };

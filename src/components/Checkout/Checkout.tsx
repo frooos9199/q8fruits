@@ -36,6 +36,9 @@ const Checkout: React.FC<CheckoutProps> = ({
     sendEmail: false,
     sendWhatsApp: false,
   });
+  
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [showAddressSelection, setShowAddressSelection] = useState(false);
 
   // Load saved user data on component mount
   useEffect(() => {
@@ -55,6 +58,9 @@ const Checkout: React.FC<CheckoutProps> = ({
           area: currentUser.area || '',
           notes: '',
         });
+        
+        // Load saved addresses
+        setSavedAddresses(currentUser.addresses || []);
       }
     }
   }, []);
@@ -96,7 +102,11 @@ const Checkout: React.FC<CheckoutProps> = ({
         'الجهراء',
         'مبارك الكبير',
         'الفروانية'
-      ]
+      ],
+      savedAddresses: 'العناوين المحفوظة',
+      selectAddress: 'اختر عنوان',
+      useThisAddress: 'استخدم هذا العنوان',
+      orEnterNew: 'أو أدخل عنوان جديد'
     },
     en: {
       title: 'Checkout',
@@ -134,13 +144,27 @@ const Checkout: React.FC<CheckoutProps> = ({
         'Jahra',
         'Mubarak Al-Kabeer',
         'Farwaniya'
-      ]
+      ],
+      savedAddresses: 'Saved Addresses',
+      selectAddress: 'Select Address',
+      useThisAddress: 'Use This Address',
+      orEnterNew: 'Or Enter New Address'
     }
   };
 
   const currentTexts = texts[language];
   const subtotal = items.reduce((sum, item) => sum + (item.selectedUnit.price * item.quantity), 0);
   const total = subtotal + deliveryPrice;
+
+  // Function to handle address selection from saved addresses
+  const handleAddressSelect = (selectedAddress: any) => {
+    setCustomerInfo({
+      ...customerInfo,
+      address: selectedAddress.address,
+      area: selectedAddress.area
+    });
+    setShowAddressSelection(false);
+  };
 
   // Function to update user data in localStorage
   const updateUserData = (updatedInfo: any) => {
@@ -166,6 +190,46 @@ const Checkout: React.FC<CheckoutProps> = ({
     }
   };
 
+  // Function to save order to user's order history
+  const saveOrderToHistory = (orderData: any) => {
+    const userEmail = localStorage.getItem('userEmail');
+    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    
+    if (isLoggedIn && userEmail) {
+      const orderHistory = JSON.parse(localStorage.getItem(`orders_${userEmail}`) || '[]');
+      
+      const newOrder = {
+        id: Date.now().toString(),
+        orderNumber: orderData.orderNumber,
+        date: orderData.date,
+        items: orderData.items.map((item: any) => ({
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.selectedUnit.price,
+          unit: item.selectedUnit.unit
+        })),
+        total: orderData.total,
+        status: 'pending' as const,
+        paymentMethod: orderData.paymentMethod,
+        deliveryPrice: orderData.deliveryPrice,
+        customerInfo: orderData.customerInfo
+      };
+      
+      orderHistory.unshift(newOrder); // Add to beginning of array (most recent first)
+      localStorage.setItem(`orders_${userEmail}`, JSON.stringify(orderHistory));
+      
+      // Update user's order count in registeredUsers
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const userIndex = registeredUsers.findIndex((user: any) => user.email === userEmail);
+      
+      if (userIndex !== -1) {
+        registeredUsers[userIndex].orderCount = orderHistory.length;
+        registeredUsers[userIndex].totalSpent = orderHistory.reduce((sum: number, order: any) => sum + order.total, 0);
+        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -177,6 +241,28 @@ const Checkout: React.FC<CheckoutProps> = ({
 
       // Update user data in localStorage before processing order
       updateUserData(customerInfo);
+
+      // Create order data for saving to history
+      const orderData = {
+        orderNumber: newOrderNumber,
+        date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+        customerInfo: {
+          name: customerInfo.name,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+          area: customerInfo.area,
+          notes: customerInfo.notes,
+          email: customerInfo.email,
+        },
+        items,
+        subtotal,
+        deliveryPrice,
+        total,
+        paymentMethod,
+      };
+
+      // Save order to user's history
+      saveOrderToHistory(orderData);
 
       // Create invoice data
       const invoiceData: InvoiceData = {
@@ -398,6 +484,44 @@ const Checkout: React.FC<CheckoutProps> = ({
                   onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
                 />
               </div>
+
+              {/* Saved Addresses Section */}
+              {savedAddresses.length > 0 && (
+                <div className="form-group">
+                  <label>{currentTexts.savedAddresses}</label>
+                  <div className="saved-addresses">
+                    <button
+                      type="button"
+                      className="select-address-btn"
+                      onClick={() => setShowAddressSelection(!showAddressSelection)}
+                    >
+                      {currentTexts.selectAddress} ({savedAddresses.length})
+                    </button>
+                    
+                    {showAddressSelection && (
+                      <div className="address-options">
+                        {savedAddresses.map((address) => (
+                          <div key={address.id} className="address-option">
+                            <div className="address-details">
+                              <h4>{address.label}</h4>
+                              <p>{address.area}</p>
+                              <p>{address.address}</p>
+                            </div>
+                            <button
+                              type="button"
+                              className="use-address-btn"
+                              onClick={() => handleAddressSelect(address)}
+                            >
+                              {currentTexts.useThisAddress}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {showAddressSelection && <p className="or-text">{currentTexts.orEnterNew}</p>}
+                </div>
+              )}
 
               <div className="form-group">
                 <label>{currentTexts.area} *</label>
