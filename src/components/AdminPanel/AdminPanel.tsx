@@ -283,6 +283,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // View order details and invoice
   const openViewOrder = (order: Order) => {
+    console.log('Opening order:', order); // للتصحيح
     setViewingOrder(order);
     setShowOrderViewModal(true);
   };
@@ -1360,7 +1361,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="customer-details">
                       <div className="detail-item">
                         <span className="detail-label">👤 الاسم:</span>
-                        <span className="detail-value">{viewingOrder.customerInfo.name}</span>
+                        <span className="detail-value">{viewingOrder.customerInfo?.name || viewingOrder.userName}</span>
                       </div>
                       <div className="detail-item">
                         <span className="detail-label">📧 البريد:</span>
@@ -1368,17 +1369,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                       <div className="detail-item">
                         <span className="detail-label">📱 الهاتف:</span>
-                        <span className="detail-value">{viewingOrder.customerInfo.phone}</span>
+                        <span className="detail-value">{viewingOrder.customerInfo?.phone || 'غير محدد'}</span>
                       </div>
                       <div className="detail-item">
                         <span className="detail-label">🏠 العنوان:</span>
-                        <span className="detail-value">{viewingOrder.customerInfo.address}</span>
+                        <span className="detail-value">{viewingOrder.customerInfo?.address || 'غير محدد'}</span>
                       </div>
                       <div className="detail-item">
                         <span className="detail-label">📍 المنطقة:</span>
-                        <span className="detail-value">{viewingOrder.customerInfo.area}</span>
+                        <span className="detail-value">{viewingOrder.customerInfo?.area || 'غير محدد'}</span>
                       </div>
-                      {viewingOrder.customerInfo.notes && (
+                      {viewingOrder.customerInfo?.notes && (
                         <div className="detail-item notes">
                           <span className="detail-label">📝 ملاحظات:</span>
                           <span className="detail-value">{viewingOrder.customerInfo.notes}</span>
@@ -1401,13 +1402,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {viewingOrder.items.map((item, index) => (
+                        {viewingOrder.items && viewingOrder.items.map((item, index) => (
                           <tr key={index}>
-                            <td>{item.name}</td>
-                            <td>{item.quantity}</td>
-                            <td>{item.unit}</td>
-                            <td>{item.price.toFixed(3)} د.ك</td>
-                            <td>{(item.price * item.quantity).toFixed(3)} د.ك</td>
+                            <td>{item.name || 'منتج غير محدد'}</td>
+                            <td>{item.quantity || 0}</td>
+                            <td>{item.unit || 'قطعة'}</td>
+                            <td>{(item.price || 0).toFixed(3)} د.ك</td>
+                            <td>{((item.price || 0) * (item.quantity || 0)).toFixed(3)} د.ك</td>
                           </tr>
                         ))}
                       </tbody>
