@@ -1,0 +1,32 @@
+{
+  "short_name": "Q8 Fruit",
+  "name": "فكهاني الكويت - Q8 Fruit",
+  "description": "أفضل الفواكه والخضار الطازجة في الكويت",
+  "icons": [
+    {
+      "src": "images/logo.jpeg",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "images/logo.jpeg",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/logo.jpeg",
+      "type": "image/jpeg",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4CAF50",
+  "background_color": "#ffffff",
+  "lang": "ar",
+  "dir": "rtl",
+  "orientation": "portrait-primary",
+  "categories": ["food", "shopping", "business"],
+  "scope": "/",
+  "prefer_related_applications": false
+}

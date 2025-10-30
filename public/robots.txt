@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://q8fruit.com/sitemap.xml
+
+# Specific pages
+Allow: /
+Allow: /products
+Allow: /cart
+Allow: /checkout
+Allow: /about
+Allow: /contact
+
+# Block admin areas
+Disallow: /admin
+Disallow: /test-checkout.html
+
+# Allow images
+Allow: /images/
+Allow: /static/
+
+# Crawl delay (optional)
+Crawl-delay: 1
