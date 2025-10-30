@@ -1391,70 +1391,81 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-  padding: 15px;
+  padding: 20px;
   margin-bottom: 15px;
   background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
 .unit-row:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
   border-color: var(--primary-color);
 }
 
 .unit-inputs {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   flex: 1;
 }
 
 .unit-input {
   flex: 1;
-  padding: 10px 12px;
+  padding: 12px 15px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.95);
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.9);
 }
 
 .unit-input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  color: #000000;
+}
+
+.unit-input::placeholder {
+  color: #666666;
+  font-weight: 400;
 }
 
 .price-input {
-  width: 120px;
-  padding: 10px 12px;
+  width: 140px;
+  padding: 12px 15px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
   text-align: center;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   transition: all 0.3s ease;
+  color: #000000;
 }
 
 .price-input:focus {
   outline: none;
   border-color: var(--secondary-color);
   box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  color: #000000;
 }
 
 .currency {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--secondary-color);
-  font-size: 14px;
-  min-width: 30px;
+  font-size: 16px;
+  min-width: 35px;
   text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .unit-actions {
@@ -1468,16 +1479,27 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #666;
+  font-size: 14px;
+  color: #1a1a1a;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.default-checkbox:hover {
+  background: #e9ecef;
+  border-color: var(--primary-color);
+  color: #000000;
 }
 
 .default-checkbox input[type="checkbox"] {
   margin: 0;
-  transform: scale(1.2);
+  transform: scale(1.3);
   accent-color: var(--primary-color);
 }
 
@@ -1533,50 +1555,53 @@ input:checked + .slider:before {
 /* الوحدات السريعة */
 .quick-units {
   margin-top: 20px;
-  padding: 15px;
+  padding: 20px;
   background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
-  border-radius: 10px;
-  border: 1px solid #c8e6c9;
+  border-radius: 12px;
+  border: 2px solid #c8e6c9;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
 }
 
 .quick-units-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
   text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .quick-units-buttons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .quick-unit-btn {
-  padding: 8px 16px;
+  padding: 10px 18px;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  color: var(--primary-color);
+  color: #1a1a1a;
   border: 2px solid var(--primary-color);
-  border-radius: 20px;
+  border-radius: 25px;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   transition: all 0.3s ease;
-  min-width: 60px;
+  min-width: 70px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .quick-unit-btn:hover {
   background: linear-gradient(135deg, var(--primary-color) 0%, #45a049 100%);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
 }
 
 .quick-unit-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(76, 175, 80, 0.2);
 }
 
 /* تحسينات إضافية للمدخلات */
@@ -1600,15 +1625,28 @@ input:checked + .slider:before {
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
+  gap: 10px;
+  font-weight: 600;
   cursor: pointer;
-  color: var(--text-color);
+  color: #1a1a1a;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.checkbox-label:hover {
+  background: #e9ecef;
+  border-color: var(--primary-color);
+  color: #000000;
+  transform: translateY(-1px);
 }
 
 .checkbox-label input[type="checkbox"] {
   margin: 0;
-  transform: scale(1.2);
+  transform: scale(1.3);
   accent-color: var(--primary-color);
 }
 
@@ -1616,16 +1654,18 @@ input:checked + .slider:before {
 .nutrition-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
+  gap: 12px;
   margin-top: 10px;
 }
 
 .nutrition-grid input {
-  padding: 10px 12px;
+  padding: 12px 15px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
-  background: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.95);
   transition: all 0.3s ease;
 }
 
@@ -1633,7 +1673,13 @@ input:checked + .slider:before {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  color: #000000;
+}
+
+.nutrition-grid input::placeholder {
+  color: #666666;
+  font-weight: 400;
 }
 
 /* إعدادات الخصم */
@@ -1647,8 +1693,8 @@ input:checked + .slider:before {
 }
 
 .discount-settings .form-group label {
-  font-size: 14px;
-  color: #6c757d;
+  font-size: 15px;
+  color: #1a1a1a;
   margin-bottom: 8px;
   font-weight: 600;
 }
@@ -1656,26 +1702,34 @@ input:checked + .slider:before {
 .discount-settings input {
   background: white;
   border: 2px solid #dee2e6;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.discount-settings input:focus {
+  color: #000000;
 }
 
 /* تحسينات إضافية للنموذج */
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  font-weight: 600;
-  color: var(--primary-color);
-  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 16px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .form-hint {
-  font-size: 13px;
-  color: #6c757d;
+  font-size: 14px;
+  color: #2c2c2c;
   margin-bottom: 15px;
-  padding: 10px;
+  padding: 12px;
   background: #f8f9fa;
   border-left: 4px solid var(--primary-color);
-  border-radius: 4px;
+  border-radius: 6px;
   font-style: italic;
+  font-weight: 500;
 }
 
 .form-group input,
@@ -1685,9 +1739,11 @@ input:checked + .slider:before {
   padding: 12px 15px;
   border: 2px solid #e0e0e0;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   font-family: inherit;
 }
 
@@ -1699,20 +1755,32 @@ input:checked + .slider:before {
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
   transform: translateY(-2px);
   background: white;
+  color: #000000;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #666666;
+  font-weight: 400;
 }
 
 .form-group textarea {
   min-height: 100px;
   resize: vertical;
   line-height: 1.6;
+  color: #1a1a1a;
 }
 
 .form-group input[type="number"] {
   text-align: center;
+  font-weight: 600;
+  color: #000000;
 }
 
 .form-group input[type="date"] {
   cursor: pointer;
+  color: #1a1a1a;
+  font-weight: 500;
 }
 
 /* تحسينات الاستجابة */
