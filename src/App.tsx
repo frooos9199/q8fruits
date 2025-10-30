@@ -7,6 +7,7 @@ import AdminPanel from './components/AdminPanel/AdminPanel.tsx';
 import Login from './components/Login/Login.tsx';
 import Checkout from './components/Checkout/Checkout.tsx';
 import UserProfile from './components/UserProfile/UserProfile.tsx';
+import TestCheckout from './components/TestCheckout/TestCheckout.tsx';
 import { Language, Product, CartItem, ProductUnit } from './types';
 
 const App: React.FC = () => {
@@ -17,6 +18,7 @@ const App: React.FC = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isTestMode, setIsTestMode] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<'admin' | 'user'>('user');
   const [userName, setUserName] = useState('');
@@ -467,6 +469,14 @@ const App: React.FC = () => {
     }
   };
 
+  // Check for test mode activation (Admin secret)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('test') === 'checkout') {
+      setIsTestMode(true);
+    }
+  }, []);
+
   const handleCheckout = (selectedPaymentMethod: 'link' | 'cash') => {
     setPaymentMethod(selectedPaymentMethod);
     setIsCartOpen(false);
@@ -480,14 +490,18 @@ const App: React.FC = () => {
 
   return (
     <div className={`App ${language === 'ar' ? 'rtl' : 'ltr'}`}>
-      <Header 
-        language={language}
-        onLanguageChange={setLanguage}
-        cartItemsCount={cartItems.reduce((total, item) => total + item.quantity, 0)}
-        onCartClick={() => setIsCartOpen(!isCartOpen)}
-        onAdminClick={openAdminPanel}
-        onLoginClick={() => setIsLoginOpen(true)}
-        isLoggedIn={isLoggedIn}
+      {isTestMode ? (
+        <TestCheckout />
+      ) : (
+        <>
+          <Header 
+            language={language}
+            onLanguageChange={setLanguage}
+            cartItemsCount={cartItems.reduce((total, item) => total + item.quantity, 0)}
+            onCartClick={() => setIsCartOpen(!isCartOpen)}
+            onAdminClick={openAdminPanel}
+            onLoginClick={() => setIsLoginOpen(true)}
+            isLoggedIn={isLoggedIn}
         userType={userType}
         userName={userName}
         userEmail={userEmail}
@@ -567,6 +581,8 @@ const App: React.FC = () => {
             />
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product, Language, ProductCategory } from '../../types';
 import AdminDashboard from '../AdminDashboard/AdminDashboard.tsx';
 import './AdminPanel.css';
-import './Orders.css';
 
 interface AdminPanelProps {
   language: Language;
@@ -14,6 +13,34 @@ interface AdminPanelProps {
   onLogout?: () => void;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  area: string;
+  joinDate: string;
+  orderCount: number;
+  totalSpent: number;
+  isActive: boolean;
+}
+
+interface Order {
+  id: string;
+  orderNumber: string;
+  userEmail: string;
+  userName: string;
+  date: string;
+  items: any[];
+  total: number;
+  status: 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
+  paymentMethod: string;
+  deliveryPrice: number;
+  customerInfo: any;
+  notes?: string;
+}
+
 const AdminPanel: React.FC<AdminPanelProps> = ({
   language,
   products,
@@ -23,1198 +50,1095 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onClose,
   onLogout,
 }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'list' | 'add' | 'orders' | 'units' | 'settings'>('dashboard');
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [deliveryPrice, setDeliveryPrice] = useState(2.000);
-  
-  // Search and filter state
-  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'orders' | 'products' | 'delivery' | 'inventory' | 'settings'>('dashboard');
+  const [activeSubTab, setActiveSubTab] = useState<string>('list');
+
+  // Users state
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showUserEditModal, setShowUserEditModal] = useState(false);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
+  const [showUserViewModal, setShowUserViewModal] = useState(false);
+
+  // Orders state
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [orderSearchTerm, setOrderSearchTerm] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+
+  // Products state
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [productSearchTerm, setProductSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Units management state
-  const [units, setUnits] = useState([
-    { id: 1, ar: 'كيلو', en: 'kg' },
-    { id: 2, ar: 'حبة', en: 'piece' },
-    { id: 3, ar: 'سحارة', en: 'bunch' },
-    { id: 4, ar: 'علبة', en: 'box' },
-    { id: 5, ar: 'كرتون', en: 'carton' },
-    { id: 6, ar: 'جرام', en: 'gram' },
-    { id: 7, ar: 'لتر', en: 'liter' }
-  ]);
-  const [newUnit, setNewUnit] = useState({ ar: '', en: '' });
-  const [editingUnit, setEditingUnit] = useState<{ id: number; ar: string; en: string } | null>(null);
-  const [newTag, setNewTag] = useState('');
+  // Delivery state
+  const [deliverySettings, setDeliverySettings] = useState({
+    defaultPrice: 2.000,
+    freeDeliveryMinimum: 15.000,
+    areas: [
+      { id: 1, name: 'الفروانية', price: 2.000, isActive: true },
+      { id: 2, name: 'حولي', price: 2.500, isActive: true },
+      { id: 3, name: 'الأحمدي', price: 3.000, isActive: true },
+      { id: 4, name: 'الجهراء', price: 3.500, isActive: true },
+      { id: 5, name: 'مبارك الكبير', price: 2.500, isActive: true },
+      { id: 6, name: 'العاصمة', price: 2.000, isActive: true }
+    ],
+    timeSlots: [
+      { id: 1, time: '9:00 - 12:00', isActive: true },
+      { id: 2, time: '12:00 - 15:00', isActive: true },
+      { id: 3, time: '15:00 - 18:00', isActive: true },
+      { id: 4, time: '18:00 - 21:00', isActive: true }
+    ]
+  });
 
-  // Sample orders data
-  const [orders] = useState([
-    {
-      id: 'FK1698567890123',
-      customerName: 'أحمد محمد',
-      customerPhone: '66778899',
-      customerEmail: 'ahmed@example.com',
-      customerAddress: 'شارع الخليج العربي، بيت 15',
-      customerArea: 'العاصمة',
-      items: [
-        { name: { ar: 'تفاح أحمر', en: 'Red Apple' }, quantity: 2, unit: { ar: 'كيلو', en: 'kg' }, price: 1.500, total: 3.000 },
-        { name: { ar: 'موز', en: 'Banana' }, quantity: 1, unit: { ar: 'سحارة', en: 'bunch' }, price: 0.800, total: 0.800 }
-      ],
-      subtotal: 3.800,
-      deliveryPrice: 2.000,
-      total: 5.800,
-      paymentMethod: 'cash',
-      status: 'pending',
-      date: '2025-10-28',
-      time: '14:30'
-    },
-    {
-      id: 'FK1698567890124',
-      customerName: 'فاطمة علي',
-      customerPhone: '55443322',
-      customerEmail: 'fatima@example.com',
-      customerAddress: 'شارع السالمية، شقة 25',
-      customerArea: 'حولي',
-      items: [
-        { name: { ar: 'خس', en: 'Lettuce' }, quantity: 2, unit: { ar: 'حبة', en: 'piece' }, price: 0.500, total: 1.000 },
-        { name: { ar: 'طماطم', en: 'Tomato' }, quantity: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 1.200, total: 1.200 }
-      ],
-      subtotal: 2.200,
-      deliveryPrice: 2.000,
-      total: 4.200,
-      paymentMethod: 'link',
-      status: 'confirmed',
-      date: '2025-10-28',
-      time: '13:15'
-    },
-    {
-      id: 'FK1698567890125',
-      customerName: 'سارة أحمد',
-      customerPhone: '99887766',
-      customerEmail: 'sara@example.com',
-      customerAddress: 'منطقة الفنطاس، فيلا 8',
-      customerArea: 'الأحمدي',
-      items: [
-        { name: { ar: 'برتقال', en: 'Orange' }, quantity: 3, unit: { ar: 'كيلو', en: 'kg' }, price: 1.800, total: 5.400 },
-        { name: { ar: 'فراولة', en: 'Strawberry' }, quantity: 2, unit: { ar: 'علبة', en: 'box' }, price: 2.000, total: 4.000 }
-      ],
-      subtotal: 9.400,
-      deliveryPrice: 2.000,
-      total: 11.400,
-      paymentMethod: 'cash',
-      status: 'delivered',
-      date: '2025-10-27',
-      time: '16:45'
+  // Load data on component mount
+  useEffect(() => {
+    loadUsers();
+    loadOrders();
+  }, []);
+
+  useEffect(() => {
+    setFilteredProducts(products);
+  }, [products]);
+
+  // Load users from localStorage
+  const loadUsers = () => {
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const usersWithStats = registeredUsers.map((user: any) => ({
+      ...user,
+      id: user.email,
+      isActive: true
+    }));
+    setUsers(usersWithStats);
+    setFilteredUsers(usersWithStats);
+  };
+
+  // Load orders from localStorage
+  const loadOrders = () => {
+    const allOrders: Order[] = [];
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    
+    registeredUsers.forEach((user: any) => {
+      const userOrders = JSON.parse(localStorage.getItem(`orders_${user.email}`) || '[]');
+      userOrders.forEach((order: any) => {
+        allOrders.push({
+          ...order,
+          userEmail: user.email,
+          userName: user.name
+        });
+      });
+    });
+    
+    allOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setOrders(allOrders);
+    setFilteredOrders(allOrders);
+  };
+
+  // Filter functions
+  const filterUsers = () => {
+    let filtered = users;
+    
+    if (userSearchTerm) {
+      filtered = filtered.filter(user => 
+        user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        user.phone.includes(userSearchTerm)
+      );
     }
-  ]);
+    
+    setFilteredUsers(filtered);
+  };
+
+  const filterOrders = () => {
+    let filtered = orders;
+    
+    if (orderSearchTerm) {
+      filtered = filtered.filter(order => 
+        order.orderNumber.toLowerCase().includes(orderSearchTerm.toLowerCase()) ||
+        order.userName.toLowerCase().includes(orderSearchTerm.toLowerCase()) ||
+        order.userEmail.toLowerCase().includes(orderSearchTerm.toLowerCase())
+      );
+    }
+    
+    if (orderStatusFilter !== 'all') {
+      filtered = filtered.filter(order => order.status === orderStatusFilter);
+    }
+    
+    setFilteredOrders(filtered);
+  };
+
+  const filterProducts = () => {
+    let filtered = products;
+    
+    if (productSearchTerm) {
+      filtered = filtered.filter(product => 
+        product.name[language].toLowerCase().includes(productSearchTerm.toLowerCase())
+      );
+    }
+    
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(product => product.category === categoryFilter);
+    }
+    
+    setFilteredProducts(filtered);
+  };
+
+  useEffect(filterUsers, [users, userSearchTerm]);
+  useEffect(filterOrders, [orders, orderSearchTerm, orderStatusFilter]);
+  useEffect(filterProducts, [products, productSearchTerm, categoryFilter, language]);
+
+  // Update order status
+  const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    // Update in localStorage
+    const userOrders = JSON.parse(localStorage.getItem(`orders_${order.userEmail}`) || '[]');
+    const orderIndex = userOrders.findIndex((o: any) => o.id === orderId);
+    
+    if (orderIndex !== -1) {
+      userOrders[orderIndex].status = newStatus;
+      localStorage.setItem(`orders_${order.userEmail}`, JSON.stringify(userOrders));
+      
+      // Update local state
+      const updatedOrders = orders.map(o => 
+        o.id === orderId ? { ...o, status: newStatus } : o
+      );
+      setOrders(updatedOrders);
+    }
+  };
+
+  // Toggle user active status
+  const toggleUserStatus = (userId: string) => {
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const userIndex = registeredUsers.findIndex((user: any) => user.email === userId);
+    
+    if (userIndex !== -1) {
+      registeredUsers[userIndex].isActive = !registeredUsers[userIndex].isActive;
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      loadUsers();
+    }
+  };
+
+  // Edit user functions
+  const openEditUser = (user: User) => {
+    setEditingUser({ ...user });
+    setShowUserEditModal(true);
+  };
+
+  const closeEditUser = () => {
+    setEditingUser(null);
+    setShowUserEditModal(false);
+  };
+
+  const saveUserChanges = () => {
+    if (!editingUser) return;
+
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const userIndex = registeredUsers.findIndex((user: any) => user.email === editingUser.email);
+    
+    if (userIndex !== -1) {
+      registeredUsers[userIndex] = {
+        ...registeredUsers[userIndex],
+        name: editingUser.name,
+        phone: editingUser.phone,
+        address: editingUser.address,
+        area: editingUser.area
+      };
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      loadUsers();
+      closeEditUser();
+    }
+  };
+
+  const deleteUser = (userId: string) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا المستخدم؟ سيتم حذف جميع طلباته أيضاً.')) {
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const filteredUsers = registeredUsers.filter((user: any) => user.email !== userId);
+      localStorage.setItem('registeredUsers', JSON.stringify(filteredUsers));
+      
+      // Also delete user's orders
+      localStorage.removeItem(`orders_${userId}`);
+      
+      loadUsers();
+      loadOrders();
+    }
+  };
+
+  // View user details
+  const openViewUser = (user: User) => {
+    setViewingUser(user);
+    setShowUserViewModal(true);
+  };
+
+  const closeViewUser = () => {
+    setViewingUser(null);
+    setShowUserViewModal(false);
+  };
 
   const texts = {
     ar: {
-      title: 'لوحة الإدارة',
-      dashboard: 'لوحة المعلومات',
-      productList: 'قائمة المنتجات',
-      addProduct: 'إضافة منتج',
+      adminPanel: 'لوحة الإدارة',
+      dashboard: 'لوحة التحكم',
+      users: 'إدارة المستخدمين',
       orders: 'إدارة الطلبات',
-      units: 'إدارة الوحدات',
+      products: 'إدارة المنتجات',
+      delivery: 'إدارة التوصيل',
+      inventory: 'إدارة المخزون',
       settings: 'الإعدادات',
       close: 'إغلاق',
-      name: 'اسم المنتج',
-      nameAr: 'الاسم بالعربية',
-      nameEn: 'الاسم بالإنجليزية',
-      category: 'الفئة',
-      price: 'السعر (د.ك)',
-      unit: 'الوحدة',
-      unitAr: 'الوحدة بالعربية',
-      unitEn: 'الوحدة بالإنجليزية',
-      stock: 'الكمية المتاحة',
-      image: 'رابط الصورة',
-      description: 'الوصف',
-      descriptionAr: 'الوصف بالعربية',
-      descriptionEn: 'الوصف بالإنجليزية',
-      published: 'منشور',
-      save: 'حفظ',
-      cancel: 'إلغاء',
+      logout: 'تسجيل خروج',
+      search: 'بحث',
+      filter: 'تصفية',
+      add: 'إضافة',
       edit: 'تعديل',
       delete: 'حذف',
-      confirm: 'تأكيد',
-      fruits: 'فواكه',
-      vegetables: 'خضار',
-      leafy: 'ورقيات',
-      baskets: 'سلات',
-      deliverySettings: 'إعدادات التوصيل',
-      deliveryPrice: 'سعر التوصيل (د.ك)',
-      kg: 'كيلو',
-      bunch: 'سحارة',
-      piece: 'حبة',
-      deleteConfirm: 'هل أنت متأكد من حذف هذا المنتج؟',
-      unitsManagement: 'إدارة الوحدات',
-      addUnit: 'إضافة وحدة جديدة',
-      unitsList: 'قائمة الوحدات',
-      unitArabic: 'الوحدة بالعربية',
-      unitEnglish: 'الوحدة بالإنجليزية',
-      addNewUnit: 'إضافة وحدة',
-      editUnit: 'تعديل الوحدة',
-      saveUnit: 'حفظ الوحدة',
-      deleteUnit: 'حذف الوحدة',
-      deleteUnitConfirm: 'هل أنت متأكد من حذف هذه الوحدة؟',
-      // Orders texts
-      ordersManagement: 'إدارة الطلبات',
+      save: 'حفظ',
+      cancel: 'إلغاء',
+      status: 'الحالة',
+      actions: 'الإجراءات',
+      name: 'الاسم',
+      email: 'البريد الإلكتروني',
+      phone: 'الهاتف',
+      address: 'العنوان',
+      joinDate: 'تاريخ التسجيل',
+      orderCount: 'عدد الطلبات',
+      totalSpent: 'إجمالي المبلغ',
+      active: 'نشط',
+      inactive: 'غير نشط',
       orderNumber: 'رقم الطلب',
       customer: 'العميل',
-      customerInfo: 'بيانات العميل',
-      phone: 'الهاتف',
-      email: 'البريد الإلكتروني',
-      address: 'العنوان',
-      area: 'المحافظة',
-      orderDate: 'تاريخ الطلب',
-      orderTime: 'وقت الطلب',
-      orderItems: 'عناصر الطلب',
-      quantity: 'الكمية',
-      unitPrice: 'سعر الوحدة',
-      itemTotal: 'المجموع',
-      subtotal: 'المجموع الفرعي',
-      delivery: 'التوصيل',
-      totalAmount: 'المبلغ الإجمالي',
+      date: 'التاريخ',
+      total: 'الإجمالي',
       paymentMethod: 'طريقة الدفع',
-      cash: 'نقدي',
-      link: 'لينك',
-      orderStatus: 'حالة الطلب',
       pending: 'قيد الانتظار',
       confirmed: 'مؤكد',
+      preparing: 'قيد التحضير',
+      delivering: 'قيد التوصيل',
       delivered: 'تم التوصيل',
       cancelled: 'ملغي',
-      changeStatus: 'تغيير الحالة',
-      viewDetails: 'عرض التفاصيل',
-      printInvoice: 'طباعة الفاتورة',
-      items: 'العناصر',
-      kwd: 'د.ك',
-      deliveryFee: 'رسوم التوصيل',
-      total: 'المجموع',
-      logout: 'تسجيل خروج',
-      search: 'البحث',
-      searchPlaceholder: 'ابحث عن منتج...',
-      filterByCategory: 'تصفية حسب الفئة',
-      filterByStatus: 'تصفية حسب الحالة',
-      allCategories: 'جميع الفئات',
-      allStatuses: 'جميع الحالات',
-      statusPublished: 'منشور',
-      statusUnpublished: 'مخفي',
-      noResults: 'لا توجد نتائج',
-      clearSearch: 'مسح البحث'
+      category: 'الفئة',
+      price: 'السعر',
+      stock: 'المخزون',
+      published: 'منشور',
+      draft: 'مسودة',
+      deliveryPrice: 'سعر التوصيل',
+      area: 'المنطقة',
+      timeSlot: 'وقت التوصيل',
+      freeDeliveryMinimum: 'حد التوصيل المجاني'
     },
     en: {
-      title: 'Admin Panel',
+      adminPanel: 'Admin Panel',
       dashboard: 'Dashboard',
-      productList: 'Product List',
-      addProduct: 'Add Product',
-      orders: 'Orders Management',
-      units: 'Units Management',
+      users: 'User Management',
+      orders: 'Order Management',
+      products: 'Product Management',
+      delivery: 'Delivery Management',
+      inventory: 'Inventory Management',
       settings: 'Settings',
       close: 'Close',
-      name: 'Product Name',
-      nameAr: 'Name in Arabic',
-      nameEn: 'Name in English',
-      category: 'Category',
-      price: 'Price (KWD)',
-      unit: 'Unit',
-      unitAr: 'Unit in Arabic',
-      unitEn: 'Unit in English',
-      stock: 'Stock',
-      image: 'Image URL',
-      description: 'Description',
-      descriptionAr: 'Description in Arabic',
-      descriptionEn: 'Description in English',
-      published: 'Published',
-      save: 'Save',
-      cancel: 'Cancel',
-      edit: 'Edit',
-      delete: 'Delete',
-      confirm: 'Confirm',
-      fruits: 'Fruits',
-      vegetables: 'Vegetables',
-      leafy: 'Leafy Greens',
-      baskets: 'Baskets',
-      deliverySettings: 'Delivery Settings',
-      deliveryPrice: 'Delivery Price (KWD)',
-      kg: 'kg',
-      bunch: 'bunch',
-      piece: 'piece',
-      deleteConfirm: 'Are you sure you want to delete this product?',
-      unitsManagement: 'Units Management',
-      addUnit: 'Add New Unit',
-      unitsList: 'Units List',
-      unitArabic: 'Unit in Arabic',
-      unitEnglish: 'Unit in English',
-      addNewUnit: 'Add Unit',
-      editUnit: 'Edit Unit',
-      saveUnit: 'Save Unit',
-      deleteUnit: 'Delete Unit',
-      deleteUnitConfirm: 'Are you sure you want to delete this unit?',
-      // Orders texts
-      ordersManagement: 'Orders Management',
-      orderNumber: 'Order Number',
-      customer: 'Customer',
-      customerInfo: 'Customer Info',
-      phone: 'Phone',
-      email: 'Email',
-      address: 'Address',
-      area: 'Area',
-      orderDate: 'Order Date',
-      orderTime: 'Order Time',
-      orderItems: 'Order Items',
-      quantity: 'Quantity',
-      unitPrice: 'Unit Price',
-      itemTotal: 'Total',
-      subtotal: 'Subtotal',
-      delivery: 'Delivery',
-      totalAmount: 'Total Amount',
-      paymentMethod: 'Payment Method',
-      cash: 'Cash',
-      link: 'Link',
-      orderStatus: 'Order Status',
-      pending: 'Pending',
-      confirmed: 'Confirmed',
-      delivered: 'Delivered',
-      cancelled: 'Cancelled',
-      changeStatus: 'Change Status',
-      viewDetails: 'View Details',
-      printInvoice: 'Print Invoice',
-      items: 'Items',
-      kwd: 'KWD',
-      deliveryFee: 'Delivery Fee',
-      total: 'Total',
       logout: 'Logout',
       search: 'Search',
-      searchPlaceholder: 'Search for product...',
-      filterByCategory: 'Filter by Category',
-      filterByStatus: 'Filter by Status',
-      allCategories: 'All Categories',
-      allStatuses: 'All Statuses',
-      statusPublished: 'Published',
-      statusUnpublished: 'Hidden',
-      noResults: 'No results found',
-      clearSearch: 'Clear Search'
+      filter: 'Filter',
+      add: 'Add',
+      edit: 'Edit',
+      delete: 'Delete',
+      save: 'Save',
+      cancel: 'Cancel',
+      status: 'Status',
+      actions: 'Actions',
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
+      address: 'Address',
+      joinDate: 'Join Date',
+      orderCount: 'Orders',
+      totalSpent: 'Total Spent',
+      active: 'Active',
+      inactive: 'Inactive',
+      orderNumber: 'Order Number',
+      customer: 'Customer',
+      date: 'Date',
+      total: 'Total',
+      paymentMethod: 'Payment Method',
+      pending: 'Pending',
+      confirmed: 'Confirmed',
+      preparing: 'Preparing',
+      delivering: 'Delivering',
+      delivered: 'Delivered',
+      cancelled: 'Cancelled',
+      category: 'Category',
+      price: 'Price',
+      stock: 'Stock',
+      published: 'Published',
+      draft: 'Draft',
+      deliveryPrice: 'Delivery Price',
+      area: 'Area',
+      timeSlot: 'Time Slot',
+      freeDeliveryMinimum: 'Free Delivery Minimum'
     }
   };
 
   const currentTexts = texts[language];
 
-  // Sample orders data
-  const sampleOrders = [
-    {
-      id: '1001',
-      date: '2024-01-15 10:30 ص',
-      status: 'pending',
-      customer: {
-        name: 'أحمد محمد',
-        phone: '+965 9999 8888',
-        email: 'ahmed@email.com',
-        address: 'شارع الخليج العربي، بيت 15',
-        area: 'الجهراء'
-      },
-      items: [
-        { name: 'موز', quantity: 2, unit: 'كيلو', price: 1.500 },
-        { name: 'تفاح أحمر', quantity: 1, unit: 'كيلو', price: 2.250 }
-      ],
-      subtotal: 3.750,
-      deliveryFee: 1.000,
-      total: 4.750,
-      paymentMethod: 'نقداً عند التوصيل'
-    },
-    {
-      id: '1002',
-      date: '2024-01-15 11:45 ص',
-      status: 'confirmed',
-      customer: {
-        name: 'فاطمة علي',
-        phone: '+965 7777 6666',
-        email: 'fatima@email.com',
-        address: 'شارع الملك فهد، شقة 25',
-        area: 'حولي'
-      },
-      items: [
-        { name: 'برتقال', quantity: 3, unit: 'كيلو', price: 1.750 },
-        { name: 'عنب أخضر', quantity: 1, unit: 'علبة', price: 3.500 }
-      ],
-      subtotal: 8.750,
-      deliveryFee: 1.000,
-      total: 9.750,
-      paymentMethod: 'كي نت'
-    },
-    {
-      id: '1003',
-      date: '2024-01-15 14:20 م',
-      status: 'delivered',
-      customer: {
-        name: 'خالد السالم',
-        phone: '+965 5555 4444',
-        email: 'khalid@email.com',
-        address: 'شارع الأحمدي، بيت 8',
-        area: 'الأحمدي'
-      },
-      items: [
-        { name: 'فراولة', quantity: 2, unit: 'علبة', price: 2.500 },
-        { name: 'كيوي', quantity: 1, unit: 'كيلو', price: 4.250 }
-      ],
-      subtotal: 9.250,
-      deliveryFee: 1.500,
-      total: 10.750,
-      paymentMethod: 'فيزا'
-    }
-  ];
+  const renderTabButtons = () => (
+    <div className="admin-tabs">
+      <button
+        className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+        onClick={() => setActiveTab('dashboard')}
+      >
+        📊 {currentTexts.dashboard}
+      </button>
+      <button
+        className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+        onClick={() => setActiveTab('users')}
+      >
+        👥 {currentTexts.users}
+      </button>
+      <button
+        className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
+        onClick={() => setActiveTab('orders')}
+      >
+        📋 {currentTexts.orders}
+      </button>
+      <button
+        className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`}
+        onClick={() => setActiveTab('products')}
+      >
+        🛍️ {currentTexts.products}
+      </button>
+      <button
+        className={`tab-btn ${activeTab === 'delivery' ? 'active' : ''}`}
+        onClick={() => setActiveTab('delivery')}
+      >
+        🚚 {currentTexts.delivery}
+      </button>
+      <button
+        className={`tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}
+        onClick={() => setActiveTab('inventory')}
+      >
+        📦 {currentTexts.inventory}
+      </button>
+      <button
+        className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+        onClick={() => setActiveTab('settings')}
+      >
+        ⚙️ {currentTexts.settings}
+      </button>
+    </div>
+  );
 
-  const categories: { key: ProductCategory; label: string }[] = [
-    { key: 'fruits', label: currentTexts.fruits },
-    { key: 'vegetables', label: currentTexts.vegetables },
-    { key: 'leafy', label: currentTexts.leafy },
-    { key: 'baskets', label: currentTexts.baskets },
-  ];
+  const renderUsersManagement = () => (
+    <div className="users-management">
+      <div className="section-header">
+        <h2>👥 {currentTexts.users}</h2>
+        <div className="search-filter-bar">
+          <input
+            type="text"
+            placeholder={`${currentTexts.search}...`}
+            value={userSearchTerm}
+            onChange={(e) => setUserSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+      </div>
 
-  // Use the managed units instead of hardcoded options
-  const unitOptions = units;
+      <div className="users-stats">
+        <div className="stat-card">
+          <h4>إجمالي المستخدمين</h4>
+          <span className="stat-number">{users.length}</span>
+        </div>
+        <div className="stat-card">
+          <h4>المستخدمين النشطين</h4>
+          <span className="stat-number">{users.filter(u => u.isActive).length}</span>
+        </div>
+        <div className="stat-card">
+          <h4>إجمالي الطلبات</h4>
+          <span className="stat-number">{users.reduce((sum, u) => sum + u.orderCount, 0)}</span>
+        </div>
+        <div className="stat-card">
+          <h4>إجمالي المبيعات</h4>
+          <span className="stat-number">{users.reduce((sum, u) => sum + u.totalSpent, 0).toFixed(3)} د.ك</span>
+        </div>
+      </div>
 
-  const [formData, setFormData] = useState({
-    nameAr: '',
-    nameEn: '',
-    category: 'fruits' as ProductCategory,
-    units: [{ id: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0, isDefault: true }],
-    stock: 0,
-    images: [] as string[],
-    imageFiles: [] as File[],
-    tags: [] as string[],
-    descriptionAr: '',
-    descriptionEn: '',
-    isPublished: true,
-  });
+      <div className="users-table-container">
+        <table className="users-table">
+          <thead>
+            <tr>
+              <th>{currentTexts.name}</th>
+              <th>{currentTexts.email}</th>
+              <th>{currentTexts.phone}</th>
+              <th>{currentTexts.area}</th>
+              <th>{currentTexts.orderCount}</th>
+              <th>{currentTexts.totalSpent}</th>
+              <th>{currentTexts.status}</th>
+              <th>{currentTexts.actions}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.map(user => (
+              <tr key={user.id}>
+                <td>
+                  <span 
+                    className="user-name-link"
+                    onClick={() => openViewUser(user)}
+                    style={{ cursor: 'pointer', color: 'var(--primary-color)', fontWeight: '500' }}
+                  >
+                    {user.name}
+                  </span>
+                </td>
+                <td>{user.email}</td>
+                <td>{user.phone}</td>
+                <td>{user.area}</td>
+                <td>{user.orderCount}</td>
+                <td>{user.totalSpent.toFixed(3)} د.ك</td>
+                <td>
+                  <span className={`status-badge ${user.isActive ? 'active' : 'inactive'}`}>
+                    {user.isActive ? currentTexts.active : currentTexts.inactive}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    className="action-btn edit"
+                    onClick={() => openEditUser(user)}
+                  >
+                    تعديل
+                  </button>
+                  <button
+                    className={`action-btn ${user.isActive ? 'deactivate' : 'activate'}`}
+                    onClick={() => toggleUserStatus(user.id)}
+                  >
+                    {user.isActive ? 'إلغاء تفعيل' : 'تفعيل'}
+                  </button>
+                  <button
+                    className="action-btn delete"
+                    onClick={() => deleteUser(user.id)}
+                  >
+                    حذف
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
-  const resetForm = () => {
-    setFormData({
-      nameAr: '',
-      nameEn: '',
-      category: 'fruits',
-      units: [{ id: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0, isDefault: true }],
-      stock: 0,
-      images: [],
-      imageFiles: [],
-      tags: [],
-      descriptionAr: '',
-      descriptionEn: '',
-      isPublished: true,
-    });
-    setEditingProduct(null);
-  };
+  const renderOrdersManagement = () => (
+    <div className="orders-management">
+      <div className="section-header">
+        <h2>📋 {currentTexts.orders}</h2>
+        <div className="search-filter-bar">
+          <input
+            type="text"
+            placeholder={`${currentTexts.search}...`}
+            value={orderSearchTerm}
+            onChange={(e) => setOrderSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          <select
+            value={orderStatusFilter}
+            onChange={(e) => setOrderStatusFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">جميع الحالات</option>
+            <option value="pending">قيد الانتظار</option>
+            <option value="confirmed">مؤكد</option>
+            <option value="preparing">قيد التحضير</option>
+            <option value="delivering">قيد التوصيل</option>
+            <option value="delivered">تم التوصيل</option>
+            <option value="cancelled">ملغي</option>
+          </select>
+        </div>
+      </div>
 
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setFormData({
-      nameAr: product.name.ar,
-      nameEn: product.name.en,
-      category: product.category,
-      units: product.units,
-      stock: product.stock,
-      images: product.images,
-      tags: product.tags || [],
-      imageFiles: [],
-      descriptionAr: product.description?.ar || '',
-      descriptionEn: product.description?.en || '',
-      isPublished: product.isPublished,
-    });
-    setActiveTab('add');
-  };
+      <div className="orders-stats">
+        <div className="stat-card">
+          <h4>إجمالي الطلبات</h4>
+          <span className="stat-number">{orders.length}</span>
+        </div>
+        <div className="stat-card">
+          <h4>قيد الانتظار</h4>
+          <span className="stat-number">{orders.filter(o => o.status === 'pending').length}</span>
+        </div>
+        <div className="stat-card">
+          <h4>مؤكدة</h4>
+          <span className="stat-number">{orders.filter(o => o.status === 'confirmed').length}</span>
+        </div>
+        <div className="stat-card">
+          <h4>تم التوصيل</h4>
+          <span className="stat-number">{orders.filter(o => o.status === 'delivered').length}</span>
+        </div>
+      </div>
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const productData = {
-      name: { ar: formData.nameAr, en: formData.nameEn },
-      category: formData.category,
-      units: formData.units,
-      stock: formData.stock,
-      tags: formData.tags,
-      images: formData.images,
-      description: formData.descriptionAr || formData.descriptionEn ? {
-        ar: formData.descriptionAr,
-        en: formData.descriptionEn,
-      } : undefined,
-      isPublished: formData.isPublished,
-    };
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>{currentTexts.orderNumber}</th>
+              <th>{currentTexts.customer}</th>
+              <th>{currentTexts.date}</th>
+              <th>العناصر</th>
+              <th>{currentTexts.total}</th>
+              <th>{currentTexts.status}</th>
+              <th>{currentTexts.actions}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredOrders.map(order => (
+              <tr key={order.id}>
+                <td>{order.orderNumber}</td>
+                <td>{order.userName}</td>
+                <td>{order.date}</td>
+                <td>{order.items.length} عنصر</td>
+                <td>{order.total.toFixed(3)} د.ك</td>
+                <td>
+                  <select
+                    value={order.status}
+                    onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                    className="status-select"
+                  >
+                    <option value="pending">قيد الانتظار</option>
+                    <option value="confirmed">مؤكد</option>
+                    <option value="preparing">قيد التحضير</option>
+                    <option value="delivering">قيد التوصيل</option>
+                    <option value="delivered">تم التوصيل</option>
+                    <option value="cancelled">ملغي</option>
+                  </select>
+                </td>
+                <td>
+                  <button className="action-btn view">عرض</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
-    if (editingProduct) {
-      onUpdateProduct(editingProduct.id, productData);
-    } else {
-      onAddProduct(productData);
-    }
+  const renderProductsManagement = () => (
+    <div className="products-management">
+      <div className="section-header">
+        <h2>🛍️ {currentTexts.products}</h2>
+        <div className="search-filter-bar">
+          <input
+            type="text"
+            placeholder={`${currentTexts.search}...`}
+            value={productSearchTerm}
+            onChange={(e) => setProductSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">جميع الفئات</option>
+            <option value="fruits">فواكه</option>
+            <option value="vegetables">خضروات</option>
+          </select>
+          <button
+            className="add-btn"
+            onClick={() => setActiveSubTab('add')}
+          >
+            ➕ {currentTexts.add}
+          </button>
+        </div>
+      </div>
 
-    resetForm();
-    setActiveTab('list');
-  };
+      <div className="sub-tabs">
+        <button
+          className={`sub-tab-btn ${activeSubTab === 'list' ? 'active' : ''}`}
+          onClick={() => setActiveSubTab('list')}
+        >
+          📋 قائمة المنتجات
+        </button>
+        <button
+          className={`sub-tab-btn ${activeSubTab === 'add' ? 'active' : ''}`}
+          onClick={() => setActiveSubTab('add')}
+        >
+          ➕ إضافة منتج
+        </button>
+      </div>
 
-  const handleDelete = (id: number) => {
-    if (window.confirm(currentTexts.deleteConfirm)) {
-      onDeleteProduct(id);
-    }
-  };
+      {activeSubTab === 'list' && (
+        <div className="products-table-container">
+          <table className="products-table">
+            <thead>
+              <tr>
+                <th>صورة</th>
+                <th>{currentTexts.name}</th>
+                <th>{currentTexts.category}</th>
+                <th>{currentTexts.price}</th>
+                <th>{currentTexts.stock}</th>
+                <th>{currentTexts.status}</th>
+                <th>{currentTexts.actions}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProducts.map(product => (
+                <tr key={product.id}>
+                  <td>
+                    <img 
+                      src={product.images[0]} 
+                      alt={product.name[language]}
+                      className="product-thumbnail"
+                    />
+                  </td>
+                  <td>{product.name[language]}</td>
+                  <td>{product.category === 'fruits' ? 'فواكه' : 'خضروات'}</td>
+                  <td>
+                    {product.units.find(u => u.isDefault)?.price.toFixed(3)} د.ك
+                  </td>
+                  <td>{product.stock}</td>
+                  <td>
+                    <span className={`status-badge ${product.isPublished ? 'published' : 'draft'}`}>
+                      {product.isPublished ? 'منشور' : 'مسودة'}
+                    </span>
+                  </td>
+                  <td>
+                    <button className="action-btn edit">تعديل</button>
+                    <button className="action-btn delete">حذف</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-  const togglePublished = (product: Product) => {
-    onUpdateProduct(product.id, { isPublished: !product.isPublished });
-  };
+      {activeSubTab === 'add' && (
+        <div className="add-product-form">
+          <h3>إضافة منتج جديد</h3>
+          {/* Add product form will be implemented here */}
+          <p>نموذج إضافة المنتج سيتم تطويره هنا</p>
+        </div>
+      )}
+    </div>
+  );
 
-  // Units management functions for products
-  const addUnitToProduct = () => {
-    const newId = Math.max(...formData.units.map(u => u.id), 0) + 1;
-    const newUnit = {
-      id: newId,
-      unit: { ar: '', en: '' },
-      price: 0,
-      isDefault: false
-    };
-    setFormData({
-      ...formData,
-      units: [...formData.units, newUnit]
-    });
-  };
+  const renderDeliveryManagement = () => (
+    <div className="delivery-management">
+      <div className="section-header">
+        <h2>🚚 {currentTexts.delivery}</h2>
+      </div>
 
-  const updateProductUnit = (unitId: number, field: string, value: any) => {
-    setFormData({
-      ...formData,
-      units: formData.units.map(unit => {
-        if (unit.id === unitId) {
-          if (field === 'unitAr') {
-            return { ...unit, unit: { ...unit.unit, ar: value } };
-          } else if (field === 'unitEn') {
-            return { ...unit, unit: { ...unit.unit, en: value } };
-          } else if (field === 'price') {
-            return { ...unit, price: parseFloat(value) || 0 };
-          } else if (field === 'isDefault') {
-            // Ensure only one default unit
-            const updatedUnits = formData.units.map(u => ({ ...u, isDefault: false }));
-            return { ...unit, isDefault: true };
-          }
-        }
-        return unit;
-      })
-    });
-  };
+      <div className="delivery-settings">
+        <div className="settings-section">
+          <h3>إعدادات التوصيل العامة</h3>
+          <div className="setting-item">
+            <label>سعر التوصيل الافتراضي:</label>
+            <input
+              type="number"
+              step="0.001"
+              value={deliverySettings.defaultPrice}
+              onChange={(e) => setDeliverySettings(prev => ({
+                ...prev,
+                defaultPrice: parseFloat(e.target.value)
+              }))}
+            />
+            <span>د.ك</span>
+          </div>
+          <div className="setting-item">
+            <label>حد التوصيل المجاني:</label>
+            <input
+              type="number"
+              step="0.001"
+              value={deliverySettings.freeDeliveryMinimum}
+              onChange={(e) => setDeliverySettings(prev => ({
+                ...prev,
+                freeDeliveryMinimum: parseFloat(e.target.value)
+              }))}
+            />
+            <span>د.ك</span>
+          </div>
+        </div>
 
-  const removeProductUnit = (unitId: number) => {
-    if (formData.units.length > 1) {
-      const updatedUnits = formData.units.filter(unit => unit.id !== unitId);
-      // If we removed the default unit, make the first one default
-      if (formData.units.find(u => u.id === unitId)?.isDefault) {
-        updatedUnits[0].isDefault = true;
-      }
-      setFormData({
-        ...formData,
-        units: updatedUnits
-      });
-    }
-  };
+        <div className="settings-section">
+          <h3>مناطق التوصيل</h3>
+          <div className="areas-table-container">
+            <table className="areas-table">
+              <thead>
+                <tr>
+                  <th>المنطقة</th>
+                  <th>السعر</th>
+                  <th>الحالة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deliverySettings.areas.map(area => (
+                  <tr key={area.id}>
+                    <td>{area.name}</td>
+                    <td>{area.price.toFixed(3)} د.ك</td>
+                    <td>
+                      <span className={`status-badge ${area.isActive ? 'active' : 'inactive'}`}>
+                        {area.isActive ? 'نشط' : 'غير نشط'}
+                      </span>
+                    </td>
+                    <td>
+                      <button className="action-btn edit">تعديل</button>
+                      <button className="action-btn toggle">
+                        {area.isActive ? 'إلغاء تفعيل' : 'تفعيل'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-  // Image management functions
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const imageUrls: string[] = [];
-    
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          imageUrls.push(event.target.result as string);
-          if (imageUrls.length === files.length) {
-            setFormData({
-              ...formData,
-              images: [...formData.images, ...imageUrls],
-              imageFiles: [...formData.imageFiles, ...files]
-            });
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
+        <div className="settings-section">
+          <h3>فترات التوصيل</h3>
+          <div className="time-slots-container">
+            {deliverySettings.timeSlots.map(slot => (
+              <div key={slot.id} className="time-slot-item">
+                <span>{slot.time}</span>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={slot.isActive}
+                    onChange={() => {
+                      setDeliverySettings(prev => ({
+                        ...prev,
+                        timeSlots: prev.timeSlots.map(s =>
+                          s.id === slot.id ? { ...s, isActive: !s.isActive } : s
+                        )
+                      }));
+                    }}
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-  const removeImage = (index: number) => {
-    setFormData({
-      ...formData,
-      images: formData.images.filter((_, i) => i !== index),
-      imageFiles: formData.imageFiles.filter((_, i) => i !== index)
-    });
-  };
+  const renderInventoryManagement = () => (
+    <div className="inventory-management">
+      <div className="section-header">
+        <h2>📦 {currentTexts.inventory}</h2>
+      </div>
 
-  // Tags management functions
-  const addTag = (tag: string) => {
-    const t = tag.trim();
-    if (!t) return;
-    if (formData.tags.includes(t)) return;
-    setFormData({ ...formData, tags: [...formData.tags, t] });
-  };
+      <div className="inventory-stats">
+        <div className="stat-card">
+          <h4>إجمالي المنتجات</h4>
+          <span className="stat-number">{products.length}</span>
+        </div>
+        <div className="stat-card">
+          <h4>منتجات منخفضة المخزون</h4>
+          <span className="stat-number">{products.filter(p => p.stock < 10).length}</span>
+        </div>
+        <div className="stat-card">
+          <h4>منتجات نفد مخزونها</h4>
+          <span className="stat-number">{products.filter(p => p.stock === 0).length}</span>
+        </div>
+      </div>
 
-  const removeTag = (index: number) => {
-    setFormData({ ...formData, tags: formData.tags.filter((_, i) => i !== index) });
-  };
+      <div className="inventory-table-container">
+        <table className="inventory-table">
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>المخزون الحالي</th>
+              <th>الحد الأدنى</th>
+              <th>حالة المخزون</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map(product => (
+              <tr key={product.id}>
+                <td>{product.name[language]}</td>
+                <td>{product.stock}</td>
+                <td>10</td>
+                <td>
+                  <span className={`status-badge ${
+                    product.stock === 0 ? 'out-of-stock' :
+                    product.stock < 10 ? 'low-stock' : 'in-stock'
+                  }`}>
+                    {product.stock === 0 ? 'نفد المخزون' :
+                     product.stock < 10 ? 'مخزون منخفض' : 'متوفر'}
+                  </span>
+                </td>
+                <td>
+                  <button className="action-btn edit">تحديث المخزون</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
-  const quickAddTag = (tag: string) => {
-    addTag(tag);
-  };
+  const renderSettings = () => (
+    <div className="settings-management">
+      <div className="section-header">
+        <h2>⚙️ {currentTexts.settings}</h2>
+      </div>
 
-  // Units management functions
-  const handleAddUnit = () => {
-    if (newUnit.ar.trim() && newUnit.en.trim()) {
-      const newId = Math.max(...units.map(u => u.id)) + 1;
-      setUnits([...units, { id: newId, ...newUnit }]);
-      setNewUnit({ ar: '', en: '' });
-    }
-  };
+      <div className="settings-sections">
+        <div className="settings-section">
+          <h3>إعدادات الموقع</h3>
+          <div className="setting-item">
+            <label>اسم الموقع:</label>
+            <input type="text" defaultValue="فكهاني الكويت" />
+          </div>
+          <div className="setting-item">
+            <label>رقم الهاتف:</label>
+            <input type="text" defaultValue="98899426" />
+          </div>
+          <div className="setting-item">
+            <label>البريد الإلكتروني:</label>
+            <input type="email" defaultValue="summit_kw@hotmail.com" />
+          </div>
+        </div>
 
-  const handleEditUnit = (unit: { id: number; ar: string; en: string }) => {
-    setEditingUnit(unit);
-  };
+        <div className="settings-section">
+          <h3>إعدادات الدفع</h3>
+          <div className="setting-item">
+            <label>تفعيل الدفع النقدي:</label>
+            <input type="checkbox" defaultChecked />
+          </div>
+          <div className="setting-item">
+            <label>تفعيل الدفع الإلكتروني:</label>
+            <input type="checkbox" defaultChecked />
+          </div>
+        </div>
 
-  const handleSaveUnit = () => {
-    if (editingUnit && editingUnit.ar.trim() && editingUnit.en.trim()) {
-      setUnits(units.map(u => u.id === editingUnit.id ? editingUnit : u));
-      setEditingUnit(null);
-    }
-  };
-
-  const handleDeleteUnit = (id: number) => {
-    if (window.confirm(currentTexts.deleteUnitConfirm)) {
-      setUnits(units.filter(u => u.id !== id));
-    }
-  };
-
-  // Order management functions
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return '#f59e0b';
-      case 'confirmed': return '#3b82f6';
-      case 'delivered': return '#10b981';
-      case 'cancelled': return '#ef4444';
-      default: return '#6b7280';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    const statusTexts = {
-      pending: currentTexts.pending,
-      confirmed: currentTexts.confirmed,
-      delivered: currentTexts.delivered,
-      cancelled: currentTexts.cancelled
-    };
-    return statusTexts[status as keyof typeof statusTexts] || status;
-  };
-
-  // Filter products based on search and filters
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = searchTerm === '' || 
-      product.name.ar.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.name.en.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-    
-    const matchesStatus = statusFilter === 'all' || 
-      (statusFilter === 'published' && product.isPublished) ||
-      (statusFilter === 'unpublished' && !product.isPublished);
-    
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setCategoryFilter('all');
-    setStatusFilter('all');
-  };
+        <div className="settings-section">
+          <h3>إعدادات الإشعارات</h3>
+          <div className="setting-item">
+            <label>إشعارات الطلبات الجديدة:</label>
+            <input type="checkbox" defaultChecked />
+          </div>
+          <div className="setting-item">
+            <label>إشعارات المخزون المنخفض:</label>
+            <input type="checkbox" defaultChecked />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="admin-overlay" onClick={onClose}>
-      <div className="admin-container" onClick={(e) => e.stopPropagation()}>
+    <div className="admin-panel-overlay">
+      <div className="admin-panel">
         <div className="admin-header">
-          <h2>{currentTexts.title}</h2>
-          <div className="header-actions">
+          <h1>🛠️ {currentTexts.adminPanel}</h1>
+          <div className="admin-header-actions">
             {onLogout && (
               <button className="logout-btn" onClick={onLogout}>
                 🚪 {currentTexts.logout}
               </button>
             )}
-            <button className="close-btn" onClick={onClose}>✕</button>
+            <button className="close-btn" onClick={onClose}>
+              ✖️ {currentTexts.close}
+            </button>
           </div>
         </div>
 
-        <div className="admin-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            📊 {currentTexts.dashboard}
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'list' ? 'active' : ''}`}
-            onClick={() => setActiveTab('list')}
-          >
-            📋 {currentTexts.productList}
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'add' ? 'active' : ''}`}
-            onClick={() => setActiveTab('add')}
-          >
-            ➕ {currentTexts.addProduct}
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
-            onClick={() => setActiveTab('orders')}
-          >
-            📦 {currentTexts.orders}
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'units' ? 'active' : ''}`}
-            onClick={() => setActiveTab('units')}
-          >
-            📏 {currentTexts.units}
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
-            ⚙️ {currentTexts.settings}
-          </button>
-        </div>
+        {renderTabButtons()}
 
         <div className="admin-content">
           {activeTab === 'dashboard' && (
             <AdminDashboard language={language} />
           )}
-          
-          {activeTab === 'list' && (
-            <div className="product-list-container">
-              {/* Search and Filter Controls */}
-              <div className="search-filter-controls">
-                <div className="search-section">
-                  <div className="search-input-container">
-                    <input
-                      type="text"
-                      placeholder={currentTexts.searchPlaceholder}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="search-input"
-                    />
-                    <span className="search-icon">🔍</span>
-                  </div>
-                  
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="all">{currentTexts.allCategories}</option>
-                    <option value="fruits">فواكه / Fruits</option>
-                    <option value="vegetables">خضروات / Vegetables</option>
-                  </select>
-                  
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="all">{currentTexts.allStatuses}</option>
-                    <option value="published">{currentTexts.statusPublished}</option>
-                    <option value="unpublished">{currentTexts.statusUnpublished}</option>
-                  </select>
-                  
-                  {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all') && (
-                    <button onClick={clearFilters} className="clear-filters-btn">
-                      ❌ {currentTexts.clearSearch}
-                    </button>
-                  )}
-                </div>
-                
-                <div className="results-info">
-                  <span>
-                    {filteredProducts.length} {language === 'ar' ? 'منتج' : 'products'}
-                  </span>
-                </div>
-              </div>
 
-              {/* Products Grid */}
-              <div className="products-grid">
-                {filteredProducts.length === 0 ? (
-                  <div className="no-results">
-                    <h3>😔 {currentTexts.noResults}</h3>
-                    <p>{language === 'ar' ? 'جرب تعديل كلمات البحث أو التصفية' : 'Try adjusting your search or filters'}</p>
-                  </div>
-                ) : (
-                  filteredProducts.map((product) => (
-                    <div key={product.id} className={`product-card ${!product.isPublished ? 'unpublished' : ''}`}>
-                      <div className="product-image">
-                        <img src={product.images[0] || '/placeholder.jpg'} alt={product.name[language]} />
-                        <div className="product-status-badge">
-                          <span className={`status-indicator ${product.isPublished ? 'published' : 'unpublished'}`}>
-                            {product.isPublished ? '🟢' : '🔴'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="product-info">
-                        <h4 className="product-title">{product.name[language]}</h4>
-                        
-                        <div className="product-units">
-                          {product.units.map(unit => (
-                            <div key={unit.id} className={`unit-price ${unit.isDefault ? 'default-unit' : ''}`}>
-                              <span className="price">{unit.price.toFixed(3)} د.ك</span>
-                              <span className="unit">/ {unit.unit[language]}</span>
-                              {unit.isDefault && <span className="default-badge">افتراضي</span>}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {product.tags && product.tags.length > 0 && (
-                          <div className="product-tags">
-                            {product.tags.slice(0, 2).map((tag, i) => (
-                              <span key={i} className="tag-badge">{tag}</span>
-                            ))}
-                            {product.tags.length > 2 && (
-                              <span className="more-tags">+{product.tags.length - 2}</span>
-                            )}
-                          </div>
-                        )}
-                        
-                        <div className="product-meta">
-                          <span className="stock-info">المخزون: {product.stock}</span>
-                          <span className="category-info">{product.category === 'fruits' ? '🥭' : '🥬'}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="product-actions">
-                        <button
-                          className={`action-btn toggle-btn ${product.isPublished ? 'published' : 'unpublished'}`}
-                          onClick={() => togglePublished(product)}
-                          title={product.isPublished ? 'إخفاء المنتج' : 'نشر المنتج'}
-                        >
-                          {product.isPublished ? '👁️' : '🙈'}
-                        </button>
-                        <button
-                          className="action-btn edit-btn"
-                          onClick={() => handleEdit(product)}
-                          title="تعديل المنتج"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          className="action-btn delete-btn"
-                          onClick={() => handleDelete(product.id)}
-                          title="حذف المنتج"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'add' && (
-            <form className="product-form" onSubmit={handleSubmit}>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{currentTexts.nameAr}</label>
-                  <input
-                    type="text"
-                    value={formData.nameAr}
-                    onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>{currentTexts.nameEn}</label>
-                  <input
-                    type="text"
-                    value={formData.nameEn}
-                    onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{currentTexts.category}</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as ProductCategory })}
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat.key} value={cat.key}>
-                        {cat.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>إدارة الوحدات والأسعار</label>
-                  <div className="units-management">
-                    {formData.units.map((unit, index) => (
-                      <div key={unit.id} className="unit-item">
-                        <div className="unit-inputs">
-                          <input
-                            type="text"
-                            placeholder="الوحدة بالعربي"
-                            value={unit.unit.ar}
-                            onChange={(e) => updateProductUnit(unit.id, 'unitAr', e.target.value)}
-                          />
-                          <input
-                            type="text"
-                            placeholder="Unit in English"
-                            value={unit.unit.en}
-                            onChange={(e) => updateProductUnit(unit.id, 'unitEn', e.target.value)}
-                          />
-                          <input
-                            type="number"
-                            step="0.001"
-                            placeholder="السعر"
-                            value={unit.price}
-                            onChange={(e) => updateProductUnit(unit.id, 'price', e.target.value)}
-                          />
-                          <label className="default-checkbox">
-                            <input
-                              type="checkbox"
-                              checked={unit.isDefault}
-                              onChange={(e) => updateProductUnit(unit.id, 'isDefault', e.target.checked)}
-                            />
-                            افتراضي
-                          </label>
-                          {formData.units.length > 1 && (
-                            <button
-                              type="button"
-                              className="remove-unit-btn"
-                              onClick={() => removeProductUnit(unit.id)}
-                            >
-                              حذف
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      className="add-unit-btn"
-                      onClick={addUnitToProduct}
-                    >
-                      إضافة وحدة جديدة
-                    </button>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>{currentTexts.stock}</label>
-                  <input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>الصور</label>
-                <div className="images-management">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="image-upload-input"
-                  />
-                  <div className="images-preview">
-                    {formData.images.map((image, index) => (
-                      <div key={index} className="image-preview-item">
-                        <img src={image} alt={`صورة ${index + 1}`} />
-                        <button
-                          type="button"
-                          className="remove-image-btn"
-                          onClick={() => removeImage(index)}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                </div>
-
-                <div className="form-group">
-                  <label>شارات (Tags)</label>
-                  <div className="tags-management">
-                    <div className="add-tag-row">
-                      <input
-                        type="text"
-                        placeholder="أضف شارة جديدة..."
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(newTag); setNewTag(''); } }}
-                      />
-                      <button type="button" className="add-unit-btn" onClick={() => { addTag(newTag); setNewTag(''); }}>
-                        إضافة
-                      </button>
-                    </div>
-                    <div className="quick-tags">
-                      <button type="button" className="category-btn" onClick={() => quickAddTag('بدون حب')}>بدون حب</button>
-                      <button type="button" className="category-btn" onClick={() => quickAddTag('فاكهه موسمية')}>فاكهه موسمية</button>
-                      <button type="button" className="category-btn" onClick={() => quickAddTag('جودة ممتازة')}>جودة ممتازة</button>
-                      <button type="button" className="category-btn" onClick={() => quickAddTag('قريباً ينتهي')}>قريباً ينتهي</button>
-                    </div>
-                    <div className="tags-list">
-                      {formData.tags.map((tag, idx) => (
-                        <span key={idx} className="tag-badge">
-                          {tag}
-                          <button type="button" className="remove-tag-btn" onClick={() => removeTag(idx)}>✕</button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                <div className="form-group">
-                  <label>{currentTexts.descriptionAr}</label>
-                  <textarea
-                    value={formData.descriptionAr}
-                    onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>{currentTexts.descriptionEn}</label>
-                  <textarea
-                    value={formData.descriptionEn}
-                    onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPublished}
-                    onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                  />
-                  {currentTexts.published}
-                </label>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="cancel-btn" onClick={resetForm}>
-                  {currentTexts.cancel}
-                </button>
-                <button type="submit" className="save-btn">
-                  {currentTexts.save}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {activeTab === 'units' && (
-            <div className="units-panel">
-              <div className="units-section">
-                <h3>{currentTexts.unitsManagement}</h3>
-                
-                {/* Add New Unit Form */}
-                <div className="add-unit-form">
-                  <h4>{currentTexts.addUnit}</h4>
-                  <div className="unit-form-row">
-                    <div className="form-group">
-                      <label>{currentTexts.unitArabic}</label>
-                      <input
-                        type="text"
-                        value={newUnit.ar}
-                        onChange={(e) => setNewUnit({ ...newUnit, ar: e.target.value })}
-                        placeholder="مثال: كيلو"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>{currentTexts.unitEnglish}</label>
-                      <input
-                        type="text"
-                        value={newUnit.en}
-                        onChange={(e) => setNewUnit({ ...newUnit, en: e.target.value })}
-                        placeholder="Example: kg"
-                      />
-                    </div>
-                    <button 
-                      className="add-unit-btn"
-                      onClick={handleAddUnit}
-                      disabled={!newUnit.ar.trim() || !newUnit.en.trim()}
-                    >
-                      ➕ {currentTexts.addNewUnit}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Units List */}
-                <div className="units-list">
-                  <h4>{currentTexts.unitsList}</h4>
-                  <div className="units-table">
-                    <div className="units-header">
-                      <div className="col">{currentTexts.unitArabic}</div>
-                      <div className="col">{currentTexts.unitEnglish}</div>
-                      <div className="col">الإجراءات</div>
-                    </div>
-                    {units.map((unit) => (
-                      <div key={unit.id} className="unit-row">
-                        {editingUnit && editingUnit.id === unit.id ? (
-                          <>
-                            <div className="col">
-                              <input
-                                type="text"
-                                value={editingUnit.ar}
-                                onChange={(e) => setEditingUnit({ ...editingUnit, ar: e.target.value })}
-                              />
-                            </div>
-                            <div className="col">
-                              <input
-                                type="text"
-                                value={editingUnit.en}
-                                onChange={(e) => setEditingUnit({ ...editingUnit, en: e.target.value })}
-                              />
-                            </div>
-                            <div className="col actions">
-                              <button 
-                                className="save-btn"
-                                onClick={handleSaveUnit}
-                              >
-                                ✅ {currentTexts.saveUnit}
-                              </button>
-                              <button 
-                                className="cancel-btn"
-                                onClick={() => setEditingUnit(null)}
-                              >
-                                ❌ {currentTexts.cancel}
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="col unit-ar">{unit.ar}</div>
-                            <div className="col unit-en">{unit.en}</div>
-                            <div className="col actions">
-                              <button 
-                                className="edit-btn"
-                                onClick={() => handleEditUnit(unit)}
-                              >
-                                ✏️ {currentTexts.edit}
-                              </button>
-                              <button 
-                                className="delete-btn"
-                                onClick={() => handleDeleteUnit(unit.id)}
-                              >
-                                🗑️ {currentTexts.delete}
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'orders' && (
-            <div className="orders-tab">
-              <h3>{currentTexts.ordersManagement}</h3>
-              <div className="orders-list">
-                {sampleOrders.map((order) => (
-                  <div key={order.id} className="order-card">
-                    <div className="order-header">
-                      <div className="order-info">
-                        <h4>{currentTexts.orderNumber}: #{order.id}</h4>
-                        <p className="order-date">{order.date}</p>
-                      </div>
-                      <div className="order-status">
-                        <span 
-                          className="status-badge" 
-                          style={{ backgroundColor: getStatusColor(order.status), color: 'white' }}
-                        >
-                          {getStatusText(order.status)}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="customer-info">
-                      <h5>{currentTexts.customer}:</h5>
-                      <p><strong>{currentTexts.name}:</strong> {order.customer.name}</p>
-                      <p><strong>{currentTexts.phone}:</strong> {order.customer.phone}</p>
-                      <p><strong>{currentTexts.email}:</strong> {order.customer.email}</p>
-                      <p><strong>{currentTexts.address}:</strong> {order.customer.address}</p>
-                      <p><strong>{currentTexts.area}:</strong> {order.customer.area}</p>
-                    </div>
-
-                    <div className="order-items">
-                      <h5>{currentTexts.items}:</h5>
-                      {order.items.map((item, index) => (
-                        <div key={index} className="order-item">
-                          <span>{item.name}</span>
-                          <span>{item.quantity} {item.unit}</span>
-                          <span>{item.price} {currentTexts.kwd}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="order-summary">
-                      <div className="order-totals">
-                        <p><strong>{currentTexts.subtotal}:</strong> {order.subtotal} {currentTexts.kwd}</p>
-                        <p><strong>{currentTexts.deliveryFee}:</strong> {order.deliveryFee} {currentTexts.kwd}</p>
-                        <p><strong>{currentTexts.total}:</strong> {order.total} {currentTexts.kwd}</p>
-                      </div>
-                      <div className="order-payment">
-                        <p><strong>{currentTexts.paymentMethod}:</strong> {order.paymentMethod}</p>
-                      </div>
-                    </div>
-
-                    <div className="order-actions">
-                      <select 
-                        value={order.status} 
-                        onChange={(e) => {
-                          // Update order status logic here
-                          console.log(`تم تغيير حالة الطلب ${order.id} إلى ${e.target.value}`);
-                        }}
-                        className="status-select"
-                      >
-                        <option value="pending">{currentTexts.pending}</option>
-                        <option value="confirmed">{currentTexts.confirmed}</option>
-                        <option value="delivered">{currentTexts.delivered}</option>
-                        <option value="cancelled">{currentTexts.cancelled}</option>
-                      </select>
-                      <button className="print-invoice-btn">
-                        🖨️ {currentTexts.printInvoice}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="settings-panel">
-              <div className="settings-section">
-                <h3>{currentTexts.deliverySettings}</h3>
-                <div className="form-group">
-                  <label>{currentTexts.deliveryPrice}</label>
-                  <input
-                    type="number"
-                    step="0.001"
-                    value={deliveryPrice}
-                    onChange={(e) => setDeliveryPrice(parseFloat(e.target.value))}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          {activeTab === 'users' && renderUsersManagement()}
+          {activeTab === 'orders' && renderOrdersManagement()}
+          {activeTab === 'products' && renderProductsManagement()}
+          {activeTab === 'delivery' && renderDeliveryManagement()}
+          {activeTab === 'inventory' && renderInventoryManagement()}
+          {activeTab === 'settings' && renderSettings()}
         </div>
+
+        {/* User Edit Modal */}
+        {showUserEditModal && editingUser && (
+          <div className="modal-overlay" onClick={closeEditUser}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>تعديل بيانات المستخدم</h3>
+                <button className="modal-close-btn" onClick={closeEditUser}>✖️</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>الاسم:</label>
+                  <input
+                    type="text"
+                    value={editingUser.name}
+                    onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>رقم الهاتف:</label>
+                  <input
+                    type="text"
+                    value={editingUser.phone}
+                    onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>العنوان:</label>
+                  <input
+                    type="text"
+                    value={editingUser.address}
+                    onChange={(e) => setEditingUser({ ...editingUser, address: e.target.value })}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>المنطقة:</label>
+                  <select
+                    value={editingUser.area}
+                    onChange={(e) => setEditingUser({ ...editingUser, area: e.target.value })}
+                    className="form-select"
+                  >
+                    <option value="الفروانية">الفروانية</option>
+                    <option value="حولي">حولي</option>
+                    <option value="الأحمدي">الأحمدي</option>
+                    <option value="الجهراء">الجهراء</option>
+                    <option value="مبارك الكبير">مبارك الكبير</option>
+                    <option value="العاصمة">العاصمة</option>
+                  </select>
+                </div>
+                
+                <div className="info-section">
+                  <p><strong>البريد الإلكتروني:</strong> {editingUser.email}</p>
+                  <p><strong>تاريخ التسجيل:</strong> {editingUser.joinDate}</p>
+                  <p><strong>عدد الطلبات:</strong> {editingUser.orderCount}</p>
+                  <p><strong>إجمالي المبلغ:</strong> {editingUser.totalSpent.toFixed(3)} د.ك</p>
+                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button className="save-btn" onClick={saveUserChanges}>
+                  💾 حفظ التغييرات
+                </button>
+                <button className="cancel-btn" onClick={closeEditUser}>
+                  ❌ إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* User View Modal */}
+        {showUserViewModal && viewingUser && (
+          <div className="modal-overlay" onClick={closeViewUser}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>تفاصيل المستخدم - {viewingUser.name}</h3>
+                <button className="modal-close-btn" onClick={closeViewUser}>✖️</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="user-details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">👤 الاسم:</span>
+                    <span className="detail-value">{viewingUser.name}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">📧 البريد الإلكتروني:</span>
+                    <span className="detail-value">{viewingUser.email}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">📱 رقم الهاتف:</span>
+                    <span className="detail-value">{viewingUser.phone}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">🏠 العنوان:</span>
+                    <span className="detail-value">{viewingUser.address}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">📍 المنطقة:</span>
+                    <span className="detail-value">{viewingUser.area}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">📅 تاريخ التسجيل:</span>
+                    <span className="detail-value">{new Date(viewingUser.joinDate).toLocaleDateString('ar-SA')}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">🛒 عدد الطلبات:</span>
+                    <span className="detail-value">{viewingUser.orderCount} طلب</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">💰 إجمالي المبلغ:</span>
+                    <span className="detail-value">{viewingUser.totalSpent.toFixed(3)} د.ك</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">⚡ الحالة:</span>
+                    <span className={`status-badge ${viewingUser.isActive ? 'active' : 'inactive'}`}>
+                      {viewingUser.isActive ? 'نشط' : 'غير نشط'}
+                    </span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">📊 متوسط قيمة الطلب:</span>
+                    <span className="detail-value">
+                      {viewingUser.orderCount > 0 ? (viewingUser.totalSpent / viewingUser.orderCount).toFixed(3) : '0.000'} د.ك
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="user-stats-section">
+                  <h4>📈 إحصائيات سريعة</h4>
+                  <div className="quick-stats">
+                    <div className="quick-stat">
+                      <span className="stat-icon">🎯</span>
+                      <span className="stat-text">
+                        عميل {viewingUser.orderCount >= 10 ? 'VIP' : viewingUser.orderCount >= 5 ? 'مميز' : 'جديد'}
+                      </span>
+                    </div>
+                    <div className="quick-stat">
+                      <span className="stat-icon">🏆</span>
+                      <span className="stat-text">
+                        {viewingUser.totalSpent >= 100 ? 'عميل ذهبي' : viewingUser.totalSpent >= 50 ? 'عميل فضي' : 'عميل برونزي'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button className="save-btn" onClick={() => {
+                  closeViewUser();
+                  openEditUser(viewingUser);
+                }}>
+                  ✏️ تعديل البيانات
+                </button>
+                <button className="cancel-btn" onClick={closeViewUser}>
+                  ❌ إغلاق
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

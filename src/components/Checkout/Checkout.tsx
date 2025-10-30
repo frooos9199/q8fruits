@@ -168,34 +168,56 @@ const Checkout: React.FC<CheckoutProps> = ({
 
   // Function to update user data in localStorage
   const updateUserData = (updatedInfo: any) => {
-    const userEmail = localStorage.getItem('userEmail');
-    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-    
-    if (isLoggedIn && userEmail) {
+    try {
+      const userEmail = localStorage.getItem('userEmail');
+      const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+      
+      if (!isLoggedIn || !userEmail) {
+        console.log('User not logged in, skipping user data update');
+        return;
+      }
+
+      console.log('Updating user data for:', userEmail);
+      
       const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
       const userIndex = registeredUsers.findIndex((user: any) => user.email === userEmail);
       
-      if (userIndex !== -1) {
-        // Update user data (excluding notes which are order-specific)
-        registeredUsers[userIndex] = {
-          ...registeredUsers[userIndex],
-          name: updatedInfo.name,
-          phone: updatedInfo.phone,
-          address: updatedInfo.address,
-          area: updatedInfo.area,
-          email: updatedInfo.email,
-        };
-        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      if (userIndex === -1) {
+        console.warn('User not found in registeredUsers');
+        return;
       }
+
+      // Update user data (excluding notes which are order-specific)
+      registeredUsers[userIndex] = {
+        ...registeredUsers[userIndex],
+        name: updatedInfo.name,
+        phone: updatedInfo.phone,
+        address: updatedInfo.address,
+        area: updatedInfo.area,
+        email: updatedInfo.email,
+      };
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      console.log('User data updated successfully');
+      
+    } catch (error) {
+      console.error('Error updating user data:', error);
+      // Don't throw error, just log it since this is not critical for order completion
     }
   };
 
   // Function to save order to user's order history
   const saveOrderToHistory = (orderData: any) => {
-    const userEmail = localStorage.getItem('userEmail');
-    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-    
-    if (isLoggedIn && userEmail) {
+    try {
+      const userEmail = localStorage.getItem('userEmail');
+      const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+      
+      if (!isLoggedIn || !userEmail) {
+        console.log('User not logged in, skipping order history save');
+        return;
+      }
+
+      console.log('Saving order to history for user:', userEmail);
+      
       const orderHistory = JSON.parse(localStorage.getItem(`orders_${userEmail}`) || '[]');
       
       const newOrder = {
@@ -217,16 +239,27 @@ const Checkout: React.FC<CheckoutProps> = ({
       
       orderHistory.unshift(newOrder); // Add to beginning of array (most recent first)
       localStorage.setItem(`orders_${userEmail}`, JSON.stringify(orderHistory));
+      console.log('Order saved to history successfully');
       
       // Update user's order count in registeredUsers
-      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-      const userIndex = registeredUsers.findIndex((user: any) => user.email === userEmail);
-      
-      if (userIndex !== -1) {
-        registeredUsers[userIndex].orderCount = orderHistory.length;
-        registeredUsers[userIndex].totalSpent = orderHistory.reduce((sum: number, order: any) => sum + order.total, 0);
-        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      try {
+        const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        const userIndex = registeredUsers.findIndex((user: any) => user.email === userEmail);
+        
+        if (userIndex !== -1) {
+          registeredUsers[userIndex].orderCount = orderHistory.length;
+          registeredUsers[userIndex].totalSpent = orderHistory.reduce((sum: number, order: any) => sum + order.total, 0);
+          localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+          console.log('Updated user statistics successfully');
+        }
+      } catch (statsError) {
+        console.warn('Failed to update user statistics:', statsError);
+        // Don't throw error, just log warning
       }
+      
+    } catch (error) {
+      console.error('Error saving order to history:', error);
+      throw error; // Re-throw so handleSubmit can handle it
     }
   };
 
@@ -235,12 +268,26 @@ const Checkout: React.FC<CheckoutProps> = ({
     setIsProcessing(true);
 
     try {
+      console.log('Starting order processing...');
+      
+      // Validate required fields
+      if (!customerInfo.name || !customerInfo.phone || !customerInfo.address || !customerInfo.area) {
+        throw new Error('Missing required customer information');
+      }
+
       // Generate order number
       const newOrderNumber = `FK${Date.now()}`;
       setOrderNumber(newOrderNumber);
+      console.log('Generated order number:', newOrderNumber);
 
       // Update user data in localStorage before processing order
-      updateUserData(customerInfo);
+      try {
+        updateUserData(customerInfo);
+        console.log('Updated user data successfully');
+      } catch (userDataError) {
+        console.warn('Failed to update user data:', userDataError);
+        // Continue processing even if user data update fails
+      }
 
       // Create order data for saving to history
       const orderData = {
@@ -262,46 +309,64 @@ const Checkout: React.FC<CheckoutProps> = ({
       };
 
       // Save order to user's history
-      saveOrderToHistory(orderData);
-
-      // Create invoice data
-      const invoiceData: InvoiceData = {
-        orderNumber: newOrderNumber,
-        date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
-        customerInfo: {
-          name: customerInfo.name,
-          phone: customerInfo.phone,
-          address: customerInfo.address,
-          area: customerInfo.area,
-          notes: customerInfo.notes,
-          email: customerInfo.email,
-        },
-        items,
-        subtotal,
-        deliveryPrice,
-        total,
-        paymentMethod,
-        language,
-      };
-
-      // Generate and send invoice automatically
-      const invoiceService = InvoiceService.getInstance();
-      
-      // Send via email if email is provided
-      if (customerInfo.email) {
-        await invoiceService.sendInvoiceByEmail(invoiceData, customerInfo.email);
+      try {
+        saveOrderToHistory(orderData);
+        console.log('Saved order to history successfully');
+      } catch (historyError) {
+        console.warn('Failed to save order history:', historyError);
+        // Continue processing even if history save fails
       }
 
-      // Simulate order processing delay
+      // Try to send email if provided (optional, don't fail if this fails)
+      if (customerInfo.email) {
+        try {
+          console.log('Attempting to send email...');
+          const invoiceData: InvoiceData = {
+            orderNumber: newOrderNumber,
+            date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+            customerInfo: {
+              name: customerInfo.name,
+              phone: customerInfo.phone,
+              address: customerInfo.address,
+              area: customerInfo.area,
+              notes: customerInfo.notes,
+              email: customerInfo.email,
+            },
+            items,
+            subtotal,
+            deliveryPrice,
+            total,
+            paymentMethod,
+            language,
+          };
+
+          const invoiceService = InvoiceService.getInstance();
+          await invoiceService.sendInvoiceByEmail(invoiceData, customerInfo.email);
+          console.log('Email sent successfully');
+        } catch (emailError) {
+          console.warn('Failed to send email (continuing anyway):', emailError);
+          // Don't fail the order if email fails
+        }
+      }
+
+      // Simulate order processing delay and complete
+      console.log('Order processing completed, showing success...');
       setTimeout(() => {
         setIsProcessing(false);
         setOrderComplete(true);
-      }, 2000);
+        console.log('Order marked as complete');
+      }, 1500);
 
     } catch (error) {
       console.error('Error processing order:', error);
       setIsProcessing(false);
-      alert('حدث خطأ في معالجة الطلب. يرجى المحاولة مرة أخرى.');
+      
+      // Show user-friendly error message
+      const errorMessage = language === 'ar' 
+        ? 'حدث خطأ في معالجة الطلب. يرجى التأكد من ملء جميع البيانات المطلوبة والمحاولة مرة أخرى.'
+        : 'An error occurred while processing your order. Please check all required fields and try again.';
+      
+      alert(errorMessage);
     }
   };
 

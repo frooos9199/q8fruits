@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الطلب - Q8 Fruit</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4CAF50, #FFA726);
+            direction: rtl;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .test-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            background: #f0f0f0;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        .success {
+            border-left-color: #4CAF50;
+            background: #e8f5e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍎 اختبار نظام الطلبات - Q8 Fruit</h1>
+        
+        <div class="test-section">
+            <div class="test-title">📝 إعداد بيانات المستخدم</div>
+            <button onclick="setupTestUser()">إنشاء مستخدم تجريبي</button>
+            <button onclick="loginTestUser()">تسجيل دخول المستخدم</button>
+            <button onclick="logoutTestUser()">تسجيل خروج</button>
+            <div id="userResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🛒 إعداد سلة التسوق</div>
+            <button onclick="setupTestCart()">إضافة منتجات للسلة</button>
+            <button onclick="clearCart()">مسح السلة</button>
+            <div id="cartResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">✅ اختبار الطلب</div>
+            <button onclick="testOrderProcess()">محاولة إتمام الطلب</button>
+            <div id="orderResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">📊 عرض البيانات المحفوظة</div>
+            <button onclick="showStoredData()">عرض جميع البيانات</button>
+            <div id="dataResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : 'success'}`;
+        }
+
+        function setupTestUser() {
+            try {
+                const testUser = {
+                    name: 'أحمد محمد',
+                    email: 'test@example.com',
+                    phone: '99887766',
+                    address: 'الفروانية، شارع الرئيسي',
+                    area: 'الفروانية',
+                    password: '123456',
+                    orderCount: 0,
+                    totalSpent: 0,
+                    joinDate: new Date().toISOString()
+                };
+
+                let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const existingIndex = registeredUsers.findIndex(user => user.email === testUser.email);
+                
+                if (existingIndex !== -1) {
+                    registeredUsers[existingIndex] = testUser;
+                } else {
+                    registeredUsers.push(testUser);
+                }
+                
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                showResult('userResult', 'تم إنشاء المستخدم التجريبي بنجاح ✅');
+            } catch (error) {
+                showResult('userResult', `خطأ في إنشاء المستخدم: ${error.message}`, true);
+            }
+        }
+
+        function loginTestUser() {
+            try {
+                localStorage.setItem('userLoggedIn', 'true');
+                localStorage.setItem('userEmail', 'test@example.com');
+                localStorage.setItem('userName', 'أحمد محمد');
+                localStorage.setItem('userPhone', '99887766');
+                localStorage.setItem('userAddress', 'الفروانية، شارع الرئيسي');
+                showResult('userResult', 'تم تسجيل دخول المستخدم التجريبي ✅');
+            } catch (error) {
+                showResult('userResult', `خطأ في تسجيل الدخول: ${error.message}`, true);
+            }
+        }
+
+        function logoutTestUser() {
+            localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userPhone');
+            localStorage.removeItem('userAddress');
+            showResult('userResult', 'تم تسجيل الخروج ✅');
+        }
+
+        function setupTestCart() {
+            try {
+                const testCart = [
+                    {
+                        product: {
+                            id: 1,
+                            name: 'تفاح أحمر',
+                            category: 'فواكه',
+                            image: '/images/apple.jpg'
+                        },
+                        selectedUnit: {
+                            unit: 'كيلو',
+                            price: 2.5
+                        },
+                        quantity: 3
+                    },
+                    {
+                        product: {
+                            id: 2,
+                            name: 'موز',
+                            category: 'فواكه',
+                            image: '/images/banana.jpg'
+                        },
+                        selectedUnit: {
+                            unit: 'كيلو',
+                            price: 1.8
+                        },
+                        quantity: 2
+                    }
+                ];
+
+                localStorage.setItem('cart', JSON.stringify(testCart));
+                showResult('cartResult', `تم إضافة ${testCart.length} منتج للسلة ✅`);
+            } catch (error) {
+                showResult('cartResult', `خطأ في إعداد السلة: ${error.message}`, true);
+            }
+        }
+
+        function clearCart() {
+            localStorage.removeItem('cart');
+            showResult('cartResult', 'تم مسح السلة ✅');
+        }
+
+        function testOrderProcess() {
+            try {
+                const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                
+                if (!isLoggedIn) {
+                    showResult('orderResult', 'يجب تسجيل دخول المستخدم أولاً ❌', true);
+                    return;
+                }
+
+                if (cart.length === 0) {
+                    showResult('orderResult', 'السلة فارغة - يجب إضافة منتجات أولاً ❌', true);
+                    return;
+                }
+
+                // Simulate order data
+                const orderData = {
+                    orderNumber: 'ORD-' + Date.now(),
+                    date: new Date().toLocaleDateString('ar-SA'),
+                    items: cart,
+                    total: cart.reduce((sum, item) => sum + (item.selectedUnit.price * item.quantity), 0) + 2,
+                    deliveryPrice: 2,
+                    paymentMethod: 'نقدي عند التسليم',
+                    customerInfo: {
+                        name: localStorage.getItem('userName'),
+                        email: localStorage.getItem('userEmail'),
+                        phone: localStorage.getItem('userPhone'),
+                        address: localStorage.getItem('userAddress'),
+                        area: 'الفروانية',
+                        notes: 'طلب تجريبي'
+                    }
+                };
+
+                // Test saving order to history
+                const userEmail = localStorage.getItem('userEmail');
+                const orderHistory = JSON.parse(localStorage.getItem(`orders_${userEmail}`) || '[]');
+                
+                const newOrder = {
+                    id: Date.now().toString(),
+                    orderNumber: orderData.orderNumber,
+                    date: orderData.date,
+                    items: orderData.items.map(item => ({
+                        name: item.product.name,
+                        quantity: item.quantity,
+                        price: item.selectedUnit.price,
+                        unit: item.selectedUnit.unit
+                    })),
+                    total: orderData.total,
+                    status: 'pending',
+                    paymentMethod: orderData.paymentMethod,
+                    deliveryPrice: orderData.deliveryPrice,
+                    customerInfo: orderData.customerInfo
+                };
+                
+                orderHistory.unshift(newOrder);
+                localStorage.setItem(`orders_${userEmail}`, JSON.stringify(orderHistory));
+
+                // Update user statistics
+                const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const userIndex = registeredUsers.findIndex(user => user.email === userEmail);
+                
+                if (userIndex !== -1) {
+                    registeredUsers[userIndex].orderCount = orderHistory.length;
+                    registeredUsers[userIndex].totalSpent = orderHistory.reduce((sum, order) => sum + order.total, 0);
+                    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                }
+
+                // Clear cart
+                localStorage.removeItem('cart');
+
+                showResult('orderResult', `تم إتمام الطلب بنجاح! ✅\nرقم الطلب: ${orderData.orderNumber}\nالإجمالي: ${orderData.total} د.ك`);
+                
+            } catch (error) {
+                showResult('orderResult', `خطأ في معالجة الطلب: ${error.message}`, true);
+            }
+        }
+
+        function showStoredData() {
+            try {
+                const data = {
+                    userLoggedIn: localStorage.getItem('userLoggedIn'),
+                    userEmail: localStorage.getItem('userEmail'),
+                    userName: localStorage.getItem('userName'),
+                    cart: JSON.parse(localStorage.getItem('cart') || '[]'),
+                    registeredUsers: JSON.parse(localStorage.getItem('registeredUsers') || '[]'),
+                    orderHistory: localStorage.getItem('userEmail') ? 
+                        JSON.parse(localStorage.getItem(`orders_${localStorage.getItem('userEmail')}`) || '[]') : []
+                };
+
+                const displayData = JSON.stringify(data, null, 2);
+                showResult('dataResult', `<pre>${displayData}</pre>`);
+            } catch (error) {
+                showResult('dataResult', `خطأ في عرض البيانات: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
