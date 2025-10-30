@@ -60,126 +60,225 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ language }) => {
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     orderStats: {
-      totalOrders: 156,
-      todayOrders: 12,
-      weekOrders: 78,
-      monthOrders: 156,
-      totalRevenue: 29.500,
-      todayRevenue: 18.900,
-      weekRevenue: 25.100,
-      monthRevenue: 29.500,
-      pendingOrders: 8,
-      completedOrders: 140,
-      cancelledOrders: 8
+      totalOrders: 0,
+      todayOrders: 0,
+      weekOrders: 0,
+      monthOrders: 0,
+      totalRevenue: 0,
+      todayRevenue: 0,
+      weekRevenue: 0,
+      monthRevenue: 0,
+      pendingOrders: 0,
+      completedOrders: 0,
+      cancelledOrders: 0
     },
     userStats: {
-      totalUsers: 284,
-      newUsersToday: 5,
-      newUsersWeek: 23,
-      newUsersMonth: 67,
-      activeUsers: 142
+      totalUsers: 0,
+      newUsersToday: 0,
+      newUsersWeek: 0,
+      newUsersMonth: 0,
+      activeUsers: 0
     },
-    recentOrders: [
-      { 
-        id: 'FK1698567890123', 
-        customerName: 'أحمد محمد', 
-        customerPhone: '99887766',
-        customerAddress: 'شارع الخليج العربي، بيت 15',
-        customerArea: 'العاصمة',
-        customerEmail: 'ahmed@email.com',
-        total: 5.800, 
-        status: 'pending', 
-        date: '2025-10-28', 
-        items: 5,
-        products: [
-          { name: { ar: 'تفاح أحمر', en: 'Red Apple' }, quantity: 2, price: 1.500, unit: { ar: 'كيلو', en: 'kg' } },
-          { name: { ar: 'موز', en: 'Banana' }, quantity: 1, price: 0.800, unit: { ar: 'سحارة', en: 'bunch' } }
-        ],
-        paymentMethod: 'cash',
-        deliveryPrice: 2.000
-      },
-      { 
-        id: 'FK1698567890124', 
-        customerName: 'فاطمة علي', 
-        customerPhone: '55443322',
-        customerAddress: 'شارع السالمية، شقة 25',
-        customerArea: 'حولي',
-        total: 4.200, 
-        status: 'completed', 
-        date: '2025-10-28', 
-        items: 3,
-        products: [
-          { name: { ar: 'خس', en: 'Lettuce' }, quantity: 2, price: 0.500, unit: { ar: 'حبة', en: 'piece' } },
-          { name: { ar: 'طماطم', en: 'Tomato' }, quantity: 1, price: 1.200, unit: { ar: 'كيلو', en: 'kg' } }
-        ],
-        paymentMethod: 'link',
-        deliveryPrice: 2.000
-      },
-      { 
-        id: 'FK1698567890125', 
-        customerName: 'خالد يوسف', 
-        customerPhone: '77665544',
-        customerAddress: 'منطقة الفنطاس، فيلا 8',
-        customerArea: 'الأحمدي',
-        total: 7.700, 
-        status: 'completed', 
-        date: '2025-10-28', 
-        items: 7,
-        products: [
-          { name: { ar: 'تفاح أحمر', en: 'Red Apple' }, quantity: 3, price: 1.500, unit: { ar: 'كيلو', en: 'kg' } },
-          { name: { ar: 'موز', en: 'Banana' }, quantity: 2, price: 0.800, unit: { ar: 'سحارة', en: 'bunch' } }
-        ],
-        paymentMethod: 'cash',
-        deliveryPrice: 2.000
-      },
-      { 
-        id: 'FK1698567890126', 
-        customerName: 'نورا سالم', 
-        customerPhone: '66554433',
-        customerAddress: 'شارع الجهراء، بيت 42',
-        customerArea: 'الجهراء',
-        total: 6.400, 
-        status: 'pending', 
-        date: '2025-10-27', 
-        items: 4,
-        products: [
-          { name: { ar: 'خس', en: 'Lettuce' }, quantity: 4, price: 0.500, unit: { ar: 'حبة', en: 'piece' } },
-          { name: { ar: 'طماطم', en: 'Tomato' }, quantity: 2, price: 1.200, unit: { ar: 'كيلو', en: 'kg' } }
-        ],
-        paymentMethod: 'cash',
-        deliveryPrice: 2.000
-      },
-      { 
-        id: 'FK1698567890127', 
-        customerName: 'سعد العتيبي', 
-        customerPhone: '88776655',
-        customerAddress: 'الفروانية، شقة 18',
-        customerArea: 'الفروانية',
-        total: 6.600, 
-        status: 'completed', 
-        date: '2025-10-27', 
-        items: 6,
-        products: [
-          { name: { ar: 'تفاح أحمر', en: 'Red Apple' }, quantity: 2, price: 1.500, unit: { ar: 'كيلو', en: 'kg' } },
-          { name: { ar: 'موز', en: 'Banana' }, quantity: 2, price: 0.800, unit: { ar: 'سحارة', en: 'bunch' } },
-          { name: { ar: 'خس', en: 'Lettuce' }, quantity: 2, price: 0.500, unit: { ar: 'حبة', en: 'piece' } }
-        ],
-        paymentMethod: 'link',
-        deliveryPrice: 2.000
-      }
-    ],
-    dailyOrders: [
-      { date: '2025-10-22', count: 8, revenue: 65.750 },
-      { date: '2025-10-23', count: 12, revenue: 89.500 },
-      { date: '2025-10-24', count: 15, revenue: 112.250 },
-      { date: '2025-10-25', count: 10, revenue: 78.000 },
-      { date: '2025-10-26', count: 18, revenue: 145.500 },
-      { date: '2025-10-27', count: 22, revenue: 167.750 },
-      { date: '2025-10-28', count: 12, revenue: 89.500 }
-    ]
+    recentOrders: [],
+    dailyOrders: []
   });
 
+  // Load real data from localStorage
+  useEffect(() => {
+    loadRealDashboardData();
+  }, []);
+
+  const loadRealDashboardData = () => {
+    // Load users
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    
+    // Load all orders
+    const allOrders: any[] = [];
+    registeredUsers.forEach((user: any) => {
+      const userOrders = JSON.parse(localStorage.getItem(`orders_${user.email}`) || '[]');
+      userOrders.forEach((order: any) => {
+        allOrders.push({
+          ...order,
+          userEmail: user.email,
+          userName: user.name,
+          customerInfo: order.customerInfo || { name: user.name, phone: user.phone || '', address: user.address || '', area: user.area || '' }
+        });
+      });
+    });
+
+    // Calculate date ranges
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Calculate order stats
+    const todayOrders = allOrders.filter(order => order.date.startsWith(todayStr));
+    const weekOrders = allOrders.filter(order => new Date(order.date) >= weekAgo);
+    const monthOrders = allOrders.filter(order => new Date(order.date) >= monthAgo);
+
+    const orderStats: OrderStats = {
+      totalOrders: allOrders.length,
+      todayOrders: todayOrders.length,
+      weekOrders: weekOrders.length,
+      monthOrders: monthOrders.length,
+      totalRevenue: allOrders.reduce((sum, order) => sum + (order.total || 0), 0),
+      todayRevenue: todayOrders.reduce((sum, order) => sum + (order.total || 0), 0),
+      weekRevenue: weekOrders.reduce((sum, order) => sum + (order.total || 0), 0),
+      monthRevenue: monthOrders.reduce((sum, order) => sum + (order.total || 0), 0),
+      pendingOrders: allOrders.filter(order => order.status === 'pending').length,
+      completedOrders: allOrders.filter(order => order.status === 'delivered' || order.status === 'completed').length,
+      cancelledOrders: allOrders.filter(order => order.status === 'cancelled').length
+    };
+
+    // Calculate user stats
+    const todayUsers = registeredUsers.filter((user: any) => {
+      const joinDate = user.joinDate || user.registrationDate || '';
+      return joinDate.startsWith(todayStr);
+    });
+    const weekUsers = registeredUsers.filter((user: any) => {
+      const joinDate = new Date(user.joinDate || user.registrationDate || '');
+      return joinDate >= weekAgo;
+    });
+    const monthUsers = registeredUsers.filter((user: any) => {
+      const joinDate = new Date(user.joinDate || user.registrationDate || '');
+      return joinDate >= monthAgo;
+    });
+
+    const userStats: UserStats = {
+      totalUsers: registeredUsers.length,
+      newUsersToday: todayUsers.length,
+      newUsersWeek: weekUsers.length,
+      newUsersMonth: monthUsers.length,
+      activeUsers: registeredUsers.filter((user: any) => user.isActive !== false).length
+    };
+
+    // Get recent orders (last 10)
+    const recentOrders: RecentOrder[] = allOrders
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 10)
+      .map(order => ({
+        id: order.orderNumber || order.id,
+        customerName: order.customerInfo?.name || order.userName,
+        customerPhone: order.customerInfo?.phone || '',
+        customerAddress: order.customerInfo?.address || '',
+        customerArea: order.customerInfo?.area || '',
+        customerEmail: order.userEmail,
+        total: order.total || 0,
+        status: order.status || 'pending',
+        date: order.date,
+        items: order.items?.length || 0,
+        products: order.items || [],
+        paymentMethod: order.paymentMethod || 'cash',
+        deliveryPrice: order.deliveryPrice || 0
+      }));
+
+    // Calculate daily orders for the last 7 days
+    const dailyOrders = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split('T')[0];
+      const dayOrders = allOrders.filter(order => order.date.startsWith(dateStr));
+      dailyOrders.push({
+        date: dateStr,
+        count: dayOrders.length,
+        revenue: dayOrders.reduce((sum, order) => sum + (order.total || 0), 0)
+      });
+    }
+
+    setDashboardData({
+      orderStats,
+      userStats,
+      recentOrders,
+      dailyOrders
+    });
+  };
+
   const texts = {
+        customerAddress: 'الفروانية، شقة 18',
+        customerArea: 'الفروانية',
+  const texts = {
+    ar: {
+      dashboard: 'لوحة المعلومات',
+      orderStats: 'إحصائيات الطلبات',
+      userStats: 'إحصائيات المستخدمين',
+      recentOrders: 'الطلبات الحديثة',
+      orderChart: 'رسم بياني للطلبات',
+      totalOrders: 'إجمالي الطلبات',
+      todayOrders: 'طلبات اليوم',
+      weekOrders: 'طلبات الأسبوع',
+      monthOrders: 'طلبات الشهر',
+      totalRevenue: 'إجمالي الإيرادات',
+      todayRevenue: 'إيرادات اليوم',
+      weekRevenue: 'إيرادات الأسبوع',
+      monthRevenue: 'إيرادات الشهر',
+      pendingOrders: 'طلبات قيد الانتظار',
+      completedOrders: 'طلبات مكتملة',
+      cancelledOrders: 'طلبات ملغية',
+      totalUsers: 'إجمالي المستخدمين',
+      newUsersToday: 'مستخدمين جدد اليوم',
+      newUsersWeek: 'مستخدمين جدد هذا الأسبوع',
+      newUsersMonth: 'مستخدمين جدد هذا الشهر',
+      activeUsers: 'مستخدمين نشطين',
+      customerName: 'اسم العميل',
+      customerPhone: 'رقم الهاتف',
+      customerArea: 'المنطقة',
+      total: 'المجموع',
+      status: 'الحالة',
+      date: 'التاريخ',
+      items: 'العناصر',
+      paymentMethod: 'طريقة الدفع',
+      pending: 'قيد الانتظار',
+      completed: 'مكتمل',
+      cancelled: 'ملغي',
+      cash: 'دفع عند التوصيل',
+      link: 'دفع إلكتروني',
+      currency: 'د.ك',
+      viewOrder: 'عرض الطلب',
+      downloadInvoice: 'تحميل الفاتورة'
+    },
+    en: {
+      dashboard: 'Dashboard',
+      orderStats: 'Order Statistics',
+      userStats: 'User Statistics',
+      recentOrders: 'Recent Orders',
+      orderChart: 'Order Chart',
+      totalOrders: 'Total Orders',
+      todayOrders: "Today's Orders",
+      weekOrders: 'Week Orders',
+      monthOrders: 'Month Orders',
+      totalRevenue: 'Total Revenue',
+      todayRevenue: "Today's Revenue",
+      weekRevenue: 'Week Revenue',
+      monthRevenue: 'Month Revenue',
+      pendingOrders: 'Pending Orders',
+      completedOrders: 'Completed Orders',
+      cancelledOrders: 'Cancelled Orders',
+      totalUsers: 'Total Users',
+      newUsersToday: 'New Users Today',
+      newUsersWeek: 'New Users This Week',
+      newUsersMonth: 'New Users This Month',
+      activeUsers: 'Active Users',
+      customerName: 'Customer Name',
+      customerPhone: 'Phone Number',
+      customerArea: 'Area',
+      total: 'Total',
+      status: 'Status',
+      date: 'Date',
+      items: 'Items',
+      paymentMethod: 'Payment Method',
+      pending: 'Pending',
+      completed: 'Completed',
+      cancelled: 'Cancelled',
+      cash: 'Cash on Delivery',
+      link: 'Online Payment',
+      currency: 'KD',
+      viewOrder: 'View Order',
+      downloadInvoice: 'Download Invoice'
+    }
+  };
+
+  const currentTexts = texts[language];
     ar: {
       dashboard: 'لوحة المعلومات',
       orderStats: 'إحصائيات الطلبات',

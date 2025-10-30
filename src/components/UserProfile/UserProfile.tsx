@@ -370,7 +370,8 @@ const UserProfile: React.FC<UserProfileProps> = ({
             <div class="header">
               <div class="company-name">🍎 فكهاني الكويت</div>
               <p>أفضل الفواكه والخضار الطازجة</p>
-              <p>للاستفسار: 98899426</p>
+              <p>للاستفسار والطلبات: 98899426</p>
+              <p>بريد إلكتروني: summit_kw@hotmail.com</p>
             </div>
             
             <div class="invoice-details">

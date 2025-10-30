@@ -349,6 +349,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           .header { text-align: center; border-bottom: 3px solid #4CAF50; padding-bottom: 20px; margin-bottom: 30px; }
           .logo { font-size: 2rem; color: #4CAF50; font-weight: bold; margin-bottom: 10px; }
           .company-info { color: #666; font-size: 0.9rem; }
+          .contact-info { color: #4CAF50; font-weight: bold; margin-top: 10px; }
           .invoice-details { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
           .section-title { font-weight: bold; color: #4CAF50; border-bottom: 2px solid #e9ecef; padding-bottom: 5px; margin-bottom: 15px; }
           .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; padding: 5px 0; }
