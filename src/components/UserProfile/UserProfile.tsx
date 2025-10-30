@@ -183,12 +183,17 @@ const UserProfile: React.FC<UserProfileProps> = ({
 
   // Load user data on component mount
   useEffect(() => {
-    loadUserData();
-  }, [userEmail]);
+    if (userEmail) {
+      loadUserData();
+    }
+  }, [userEmail, userName]);
 
   const loadUserData = () => {
+    console.log('Loading user data for:', userEmail);
     const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     const currentUser = registeredUsers.find((user: any) => user.email === userEmail);
+    
+    console.log('Found user:', currentUser);
     
     if (currentUser) {
       // Load user orders from localStorage
@@ -207,12 +212,38 @@ const UserProfile: React.FC<UserProfileProps> = ({
         orders: userOrders
       };
       
+      console.log('Setting user data:', userData);
       setUserData(userData);
       setEditForm({
         name: userData.name,
         phone: userData.phone,
         address: userData.address,
         area: userData.area
+      });
+    } else {
+      // If user not found, create default user data
+      const userOrders = JSON.parse(localStorage.getItem(`orders_${userEmail}`) || '[]');
+      
+      const defaultUserData: UserData = {
+        name: userName || 'مستخدم',
+        email: userEmail,
+        phone: '',
+        address: '',
+        area: '',
+        joinDate: new Date().toLocaleDateString(),
+        orderCount: userOrders.length,
+        totalSpent: userOrders.reduce((sum: number, order: OrderHistory) => sum + order.total, 0),
+        addresses: [],
+        orders: userOrders
+      };
+      
+      console.log('Setting default user data:', defaultUserData);
+      setUserData(defaultUserData);
+      setEditForm({
+        name: defaultUserData.name,
+        phone: defaultUserData.phone,
+        address: defaultUserData.address,
+        area: defaultUserData.area
       });
     }
   };
@@ -348,7 +379,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
           <button className="profile-btn" onClick={() => {
             if (onOpenFullProfile) {
               onOpenFullProfile();
-              setActiveTab('orders');
+              setTimeout(() => setActiveTab('orders'), 100);
             }
           }}>
             📦 {currentTexts.orders}
@@ -357,7 +388,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
           <button className="profile-btn" onClick={() => {
             if (onOpenFullProfile) {
               onOpenFullProfile();
-              setActiveTab('addresses');
+              setTimeout(() => setActiveTab('addresses'), 100);
             }
           }}>
             📍 {currentTexts.addresses}
@@ -366,7 +397,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
           <button className="profile-btn" onClick={() => {
             if (onOpenFullProfile) {
               onOpenFullProfile();
-              setActiveTab('settings');
+              setTimeout(() => setActiveTab('settings'), 100);
             }
           }}>
             ⚙️ {currentTexts.settings}
@@ -382,7 +413,18 @@ const UserProfile: React.FC<UserProfileProps> = ({
 
   // Full profile view
   if (!userData) {
-    return <div className="user-profile-loading">Loading...</div>;
+    return (
+      <div className="user-profile-full">
+        <div className="profile-header-full">
+          <h2>{currentTexts.profile}</h2>
+          {onClose && <button className="close-btn" onClick={onClose}>✕</button>}
+        </div>
+        <div className="user-profile-loading">
+          <div className="loading-spinner">🔄</div>
+          <p>جاري تحميل البيانات...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

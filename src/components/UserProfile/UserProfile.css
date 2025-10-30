@@ -738,10 +738,26 @@
 
 .user-profile-loading {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 200px;
+  height: 300px;
   color: var(--color-text-muted);
+}
+
+.loading-spinner {
+  font-size: var(--text-4xl);
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Mobile Responsive */
