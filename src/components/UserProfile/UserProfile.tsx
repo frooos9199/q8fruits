@@ -330,6 +330,192 @@ const UserProfile: React.FC<UserProfileProps> = ({
     }
   };
 
+  // View order invoice
+  const viewOrderInvoice = (order: OrderHistory) => {
+    // Create invoice data similar to the admin panel
+    const invoiceData = {
+      orderNumber: order.orderNumber,
+      date: order.date,
+      customerInfo: order.customerInfo,
+      items: order.items,
+      total: order.total,
+      deliveryPrice: order.deliveryPrice,
+      paymentMethod: order.paymentMethod,
+      status: order.status
+    };
+
+    // For now, we'll create a simple popup with invoice details
+    const invoiceWindow = window.open('', '_blank', 'width=800,height=600');
+    if (invoiceWindow) {
+      invoiceWindow.document.write(`
+        <html>
+          <head>
+            <title>فاتورة رقم ${order.orderNumber}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; direction: rtl; }
+              .header { text-align: center; margin-bottom: 30px; }
+              .company-name { color: #4caf50; font-size: 24px; font-weight: bold; }
+              .invoice-details { margin: 20px 0; }
+              .customer-info { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; }
+              .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+              .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+              .items-table th { background: #4caf50; color: white; }
+              .total-section { margin-top: 20px; }
+              .total-row { display: flex; justify-content: space-between; margin: 5px 0; }
+              .final-total { font-weight: bold; font-size: 18px; color: #4caf50; }
+              .contact-info { margin-top: 30px; text-align: center; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="company-name">🍎 فكهاني الكويت</div>
+              <p>أفضل الفواكه والخضار الطازجة</p>
+              <p>للاستفسار: 98899426</p>
+            </div>
+            
+            <div class="invoice-details">
+              <h3>فاتورة رقم: ${order.orderNumber}</h3>
+              <p>التاريخ: ${order.date}</p>
+              <p>الحالة: ${order.status === 'completed' ? 'مكتمل' : order.status === 'pending' ? 'قيد الانتظار' : 'ملغي'}</p>
+            </div>
+            
+            <div class="customer-info">
+              <h4>بيانات العميل</h4>
+              <p><strong>الاسم:</strong> ${order.customerInfo.name}</p>
+              <p><strong>الهاتف:</strong> ${order.customerInfo.phone}</p>
+              <p><strong>العنوان:</strong> ${order.customerInfo.address}</p>
+              <p><strong>المنطقة:</strong> ${order.customerInfo.area}</p>
+            </div>
+            
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>المنتج</th>
+                  <th>الكمية</th>
+                  <th>الوحدة</th>
+                  <th>السعر</th>
+                  <th>المجموع</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.items.map(item => `
+                  <tr>
+                    <td>${language === 'ar' ? item.name.ar : item.name.en}</td>
+                    <td>${item.quantity}</td>
+                    <td>${language === 'ar' ? item.unit.ar : item.unit.en}</td>
+                    <td>${item.price.toFixed(3)} د.ك</td>
+                    <td>${(item.price * item.quantity).toFixed(3)} د.ك</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            
+            <div class="total-section">
+              <div class="total-row">
+                <span>المجموع الفرعي:</span>
+                <span>${(order.total - order.deliveryPrice).toFixed(3)} د.ك</span>
+              </div>
+              <div class="total-row">
+                <span>رسوم التوصيل:</span>
+                <span>${order.deliveryPrice.toFixed(3)} د.ك</span>
+              </div>
+              <div class="total-row final-total">
+                <span>المجموع النهائي:</span>
+                <span>${order.total.toFixed(3)} د.ك</span>
+              </div>
+              <div class="total-row">
+                <span>طريقة الدفع:</span>
+                <span>${order.paymentMethod === 'cash' ? 'الدفع عند التوصيل' : 'دفع إلكتروني'}</span>
+              </div>
+            </div>
+            
+            <div class="contact-info">
+              <p>شكراً لك على التسوق مع فكهاني الكويت</p>
+              <p>للاستفسارات: 98899426</p>
+            </div>
+            
+            <script>
+              window.print();
+            </script>
+          </body>
+        </html>
+      `);
+      invoiceWindow.document.close();
+    }
+  };
+
+  // Download order invoice as PDF
+  const downloadOrderInvoice = async (order: OrderHistory) => {
+    try {
+      // Import jsPDF dynamically
+      const jsPDFModule = await import('jspdf');
+      const jsPDF = (jsPDFModule as any).jsPDF || jsPDFModule.default;
+      
+      const doc = new jsPDF();
+      
+      // Add Arabic font support (basic)
+      doc.setFont('helvetica');
+      
+      // Company header
+      doc.setFontSize(20);
+      doc.setTextColor(76, 175, 80);
+      doc.text('Fakahani Kuwait', 105, 20, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Fresh Fruits & Vegetables', 105, 30, { align: 'center' });
+      doc.text('Phone: 98899426', 105, 40, { align: 'center' });
+      
+      // Invoice details
+      doc.setFontSize(16);
+      doc.text(`Invoice #${order.orderNumber}`, 20, 60);
+      doc.setFontSize(12);
+      doc.text(`Date: ${order.date}`, 20, 70);
+      doc.text(`Status: ${order.status}`, 20, 80);
+      
+      // Customer info
+      doc.setFontSize(14);
+      doc.text('Customer Information:', 20, 100);
+      doc.setFontSize(12);
+      doc.text(`Name: ${order.customerInfo.name}`, 20, 110);
+      doc.text(`Phone: ${order.customerInfo.phone}`, 20, 120);
+      doc.text(`Address: ${order.customerInfo.address}`, 20, 130);
+      doc.text(`Area: ${order.customerInfo.area}`, 20, 140);
+      
+      // Items
+      let yPosition = 160;
+      doc.setFontSize(14);
+      doc.text('Order Items:', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFontSize(10);
+      order.items.forEach(item => {
+        const itemText = `${language === 'ar' ? item.name.ar : item.name.en} - ${item.quantity} ${language === 'ar' ? item.unit.ar : item.unit.en} @ ${item.price.toFixed(3)} KD = ${(item.price * item.quantity).toFixed(3)} KD`;
+        doc.text(itemText, 20, yPosition);
+        yPosition += 10;
+      });
+      
+      // Totals
+      yPosition += 10;
+      doc.setFontSize(12);
+      doc.text(`Subtotal: ${(order.total - order.deliveryPrice).toFixed(3)} KD`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Delivery: ${order.deliveryPrice.toFixed(3)} KD`, 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(14);
+      doc.text(`Total: ${order.total.toFixed(3)} KD`, 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      doc.text(`Payment: ${order.paymentMethod === 'cash' ? 'Cash on Delivery' : 'Online Payment'}`, 20, yPosition);
+      
+      // Save the PDF
+      doc.save(`invoice-${order.orderNumber}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('حدث خطأ في تحميل الفاتورة');
+    }
+  };
+
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending': return currentTexts.pending;
@@ -653,6 +839,21 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     <div className="order-payment">
                       <span><strong>{currentTexts.paymentMethod}:</strong></span>
                       <span>{order.paymentMethod === 'cash' ? currentTexts.cash : currentTexts.link}</span>
+                    </div>
+                    
+                    <div className="order-actions">
+                      <button 
+                        className="view-invoice-btn"
+                        onClick={() => viewOrderInvoice(order)}
+                      >
+                        📄 عرض الفاتورة
+                      </button>
+                      <button 
+                        className="download-invoice-btn"
+                        onClick={() => downloadOrderInvoice(order)}
+                      >
+                        💾 تحميل الفاتورة
+                      </button>
                     </div>
                   </div>
                 ))}

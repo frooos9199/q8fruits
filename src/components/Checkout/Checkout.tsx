@@ -317,37 +317,8 @@ const Checkout: React.FC<CheckoutProps> = ({
         // Continue processing even if history save fails
       }
 
-      // Try to send email if provided (optional, don't fail if this fails)
-      if (customerInfo.email) {
-        try {
-          console.log('Attempting to send email...');
-          const invoiceData: InvoiceData = {
-            orderNumber: newOrderNumber,
-            date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
-            customerInfo: {
-              name: customerInfo.name,
-              phone: customerInfo.phone,
-              address: customerInfo.address,
-              area: customerInfo.area,
-              notes: customerInfo.notes,
-              email: customerInfo.email,
-            },
-            items,
-            subtotal,
-            deliveryPrice,
-            total,
-            paymentMethod,
-            language,
-          };
-
-          const invoiceService = InvoiceService.getInstance();
-          await invoiceService.sendInvoiceByEmail(invoiceData, customerInfo.email);
-          console.log('Email sent successfully');
-        } catch (emailError) {
-          console.warn('Failed to send email (continuing anyway):', emailError);
-          // Don't fail the order if email fails
-        }
-      }
+      // Save order to user's profile (invoices will be saved automatically)
+      console.log('Order saved successfully for user profile access');
 
       // Simulate order processing delay and complete
       console.log('Order processing completed, showing success...');

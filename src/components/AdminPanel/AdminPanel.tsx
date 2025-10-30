@@ -75,11 +75,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [productSearchTerm, setProductSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: { ar: '', en: '' },
+    category: 'fruits' as ProductCategory,
+    prices: [{ quantity: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0 }],
+    image: '',
+    description: { ar: '', en: '' },
+    inStock: true,
+    isPublished: false
+  });
 
   // Delivery state
   const [deliverySettings, setDeliverySettings] = useState({
     defaultPrice: 2.000,
     freeDeliveryMinimum: 15.000,
+    estimatedTime: 'خلال 2-3 ساعات',
+    notes: '',
     areas: [
       { id: 1, name: 'الفروانية', price: 2.000, isActive: true },
       { id: 2, name: 'حولي', price: 2.500, isActive: true },
@@ -100,11 +112,32 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(() => {
     loadUsers();
     loadOrders();
+    loadDeliverySettings();
   }, []);
 
   useEffect(() => {
     setFilteredProducts(products);
   }, [products]);
+
+  // Refresh orders when switching to orders tab
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      loadOrders();
+    }
+  }, [activeTab]);
+
+  // Load delivery settings from localStorage
+  const loadDeliverySettings = () => {
+    try {
+      const savedSettings = localStorage.getItem('deliverySettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setDeliverySettings(prev => ({ ...prev, ...parsed }));
+      }
+    } catch (error) {
+      console.error('Error loading delivery settings:', error);
+    }
+  };
 
   // Load users from localStorage
   const loadUsers = () => {
@@ -137,6 +170,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     allOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setOrders(allOrders);
     setFilteredOrders(allOrders);
+  };
+
+  // Refresh orders - to be called when admin panel opens or needs update
+  const refreshOrders = () => {
+    loadOrders();
   };
 
   // Filter functions
@@ -454,6 +492,86 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     return statusMap[status] || status;
   };
 
+  // Product management functions
+  const handleEditProduct = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      // For now, just show alert. In future, open edit modal
+      alert(`تعديل المنتج: ${language === 'ar' ? product.name.ar : product.name.en}`);
+      // TODO: Implement product editing modal
+    }
+  };
+
+  const handleDeleteProduct = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      const productName = language === 'ar' ? product.name.ar : product.name.en;
+      if (confirm(`هل أنت متأكد من حذف المنتج: ${productName}؟`)) {
+        onDeleteProduct(productId);
+        alert('تم حذف المنتج بنجاح');
+      }
+    }
+  };
+
+  const handleToggleProductStatus = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      const updatedProduct = { ...product, isPublished: !product.isPublished };
+      onUpdateProduct(productId, updatedProduct);
+      alert(updatedProduct.isPublished ? 'تم نشر المنتج' : 'تم إخفاء المنتج');
+    }
+  };
+
+  // Add new product
+  const handleAddProduct = () => {
+    if (!newProduct.name.ar || !newProduct.name.en || !newProduct.prices[0].price) {
+      alert('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const productToAdd = {
+      name: newProduct.name,
+      category: newProduct.category,
+      prices: newProduct.prices,
+      units: [{
+        id: 1,
+        unit: newProduct.prices[0].unit,
+        price: newProduct.prices[0].price,
+        isDefault: true
+      }],
+      images: newProduct.image ? [newProduct.image] : [],
+      image: newProduct.image,
+      description: newProduct.description,
+      inStock: newProduct.inStock,
+      stock: 100, // Default stock
+      isPublished: newProduct.isPublished
+    };
+
+    onAddProduct(productToAdd);
+    setShowAddProductModal(false);
+    setNewProduct({
+      name: { ar: '', en: '' },
+      category: 'fruits' as ProductCategory,
+      prices: [{ quantity: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0 }],
+      image: '',
+      description: { ar: '', en: '' },
+      inStock: true,
+      isPublished: false
+    });
+    alert('تم إضافة المنتج بنجاح');
+  };
+
+  // Save delivery settings
+  const saveDeliverySettings = () => {
+    try {
+      localStorage.setItem('deliverySettings', JSON.stringify(deliverySettings));
+      alert('تم حفظ إعدادات التوصيل بنجاح');
+    } catch (error) {
+      console.error('Error saving delivery settings:', error);
+      alert('حدث خطأ في حفظ الإعدادات');
+    }
+  };
+
   const texts = {
     ar: {
       adminPanel: 'لوحة الإدارة',
@@ -729,6 +847,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <option value="delivered">تم التوصيل</option>
             <option value="cancelled">ملغي</option>
           </select>
+          <button 
+            className="refresh-btn"
+            onClick={refreshOrders}
+            title="تحديث الطلبات"
+          >
+            🔄 تحديث
+          </button>
         </div>
       </div>
 
@@ -823,11 +948,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <option value="fruits">فواكه</option>
             <option value="vegetables">خضروات</option>
           </select>
-          <button
-            className="add-btn"
-            onClick={() => setActiveSubTab('add')}
+          <button 
+            className="add-product-btn"
+            onClick={() => setShowAddProductModal(true)}
           >
-            ➕ {currentTexts.add}
+            ➕ إضافة منتج جديد
           </button>
         </div>
       </div>
@@ -883,8 +1008,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     </span>
                   </td>
                   <td>
-                    <button className="action-btn edit">تعديل</button>
-                    <button className="action-btn delete">حذف</button>
+                    <button 
+                      className="action-btn edit"
+                      onClick={() => handleEditProduct(product.id)}
+                    >
+                      تعديل
+                    </button>
+                    <button 
+                      className="action-btn delete"
+                      onClick={() => handleDeleteProduct(product.id)}
+                    >
+                      حذف
+                    </button>
+                    <button 
+                      className="action-btn publish"
+                      onClick={() => handleToggleProductStatus(product.id)}
+                    >
+                      {product.isPublished ? 'إخفاء' : 'نشر'}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -938,6 +1079,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             />
             <span>د.ك</span>
           </div>
+          <div className="setting-item">
+            <label>وقت التوصيل المتوقع:</label>
+            <input
+              type="text"
+              placeholder="مثال: خلال 2-3 ساعات"
+              value={deliverySettings.estimatedTime || ''}
+              onChange={(e) => setDeliverySettings(prev => ({
+                ...prev,
+                estimatedTime: e.target.value
+              }))}
+            />
+          </div>
+          <div className="setting-item">
+            <label>ملاحظات التوصيل:</label>
+            <textarea
+              placeholder="ملاحظات إضافية حول التوصيل..."
+              value={deliverySettings.notes || ''}
+              onChange={(e) => setDeliverySettings(prev => ({
+                ...prev,
+                notes: e.target.value
+              }))}
+            />
+          </div>
+          <button 
+            className="save-btn"
+            onClick={saveDeliverySettings}
+          >
+            💾 حفظ الإعدادات
+          </button>
         </div>
 
         <div className="settings-section">
