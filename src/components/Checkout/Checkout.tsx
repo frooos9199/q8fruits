@@ -1,0 +1,395 @@
+import React, { useState, useEffect } from 'react';
+import { CartItem, Language } from '../../types';
+import { InvoiceService, InvoiceData } from '../../services/InvoiceService.ts';
+import './Checkout.css';
+
+interface CheckoutProps {
+  items: CartItem[];
+  language: Language;
+  deliveryPrice: number;
+  paymentMethod: 'link' | 'cash';
+  onClose: () => void;
+  onOrderComplete: () => void;
+}
+
+const Checkout: React.FC<CheckoutProps> = ({
+  items,
+  language,
+  deliveryPrice,
+  paymentMethod,
+  onClose,
+  onOrderComplete,
+}) => {
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    area: '',
+    notes: '',
+  });
+  
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [orderNumber, setOrderNumber] = useState('');
+
+  // Load saved user data on component mount
+  useEffect(() => {
+    const userEmail = localStorage.getItem('userEmail');
+    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    
+    if (isLoggedIn && userEmail) {
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const currentUser = registeredUsers.find((user: any) => user.email === userEmail);
+      
+      if (currentUser) {
+        setCustomerInfo({
+          name: currentUser.name || '',
+          phone: currentUser.phone || '',
+          email: currentUser.email || '',
+          address: currentUser.address || '',
+          area: currentUser.area || '',
+          notes: '',
+        });
+      }
+    }
+  }, []);
+
+  const texts = {
+    ar: {
+      title: 'إتمام الطلب',
+      customerInfo: 'بيانات العميل',
+      name: 'الاسم الكامل',
+      phone: 'رقم الهاتف',
+      email: 'البريد الإلكتروني (اختياري)',
+      address: 'العنوان',
+      area: 'المحافظة',
+      notes: 'ملاحظات إضافية (اختياري)',
+      orderSummary: 'ملخص الطلب',
+      subtotal: 'المجموع الفرعي',
+      delivery: 'التوصيل',
+      total: 'المجموع الكلي',
+      paymentMethod: 'طريقة الدفع',
+      cash: 'دفع نقدي',
+      link: 'دفع لينك',
+      currency: 'د.ك',
+      placeOrder: 'تأكيد الطلب',
+      processing: 'جاري المعالجة...',
+      orderSuccess: 'تم تأكيد طلبكم بنجاح!',
+      orderNumber: 'رقم الطلب',
+      downloadInvoice: 'تحميل الفاتورة',
+      newOrder: 'طلب جديد',
+      close: 'إغلاق',
+      required: 'مطلوب',
+      areas: [
+        'العاصمة',
+        'حولي',
+        'الأحمدي',
+        'الجهراء',
+        'مبارك الكبير',
+        'الفروانية'
+      ]
+    },
+    en: {
+      title: 'Checkout',
+      customerInfo: 'Customer Information',
+      name: 'Full Name',
+      phone: 'Phone Number',
+      email: 'Email (Optional)',
+      address: 'Address',
+      area: 'Area',
+      notes: 'Additional Notes (Optional)',
+      orderSummary: 'Order Summary',
+      subtotal: 'Subtotal',
+      delivery: 'Delivery',
+      total: 'Total',
+      paymentMethod: 'Payment Method',
+      cash: 'Cash Payment',
+      link: 'Link Payment',
+      currency: 'KWD',
+      placeOrder: 'Place Order',
+      processing: 'Processing...',
+      orderSuccess: 'Your order has been confirmed successfully!',
+      orderNumber: 'Order Number',
+      downloadInvoice: 'Download Invoice',
+      newOrder: 'New Order',
+      close: 'Close',
+      required: 'Required',
+      areas: [
+        'Capital',
+        'Hawalli',
+        'Ahmadi',
+        'Jahra',
+        'Mubarak Al-Kabeer',
+        'Farwaniya'
+      ]
+    }
+  };
+
+  const currentTexts = texts[language];
+  const subtotal = items.reduce((sum, item) => sum + (item.selectedUnit.price * item.quantity), 0);
+  const total = subtotal + deliveryPrice;
+
+  // Function to update user data in localStorage
+  const updateUserData = (updatedInfo: any) => {
+    const userEmail = localStorage.getItem('userEmail');
+    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    
+    if (isLoggedIn && userEmail) {
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const userIndex = registeredUsers.findIndex((user: any) => user.email === userEmail);
+      
+      if (userIndex !== -1) {
+        // Update user data (excluding notes which are order-specific)
+        registeredUsers[userIndex] = {
+          ...registeredUsers[userIndex],
+          name: updatedInfo.name,
+          phone: updatedInfo.phone,
+          address: updatedInfo.address,
+          area: updatedInfo.area,
+          email: updatedInfo.email,
+        };
+        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessing(true);
+
+    try {
+      // Generate order number
+      const newOrderNumber = `FK${Date.now()}`;
+      setOrderNumber(newOrderNumber);
+
+      // Update user data in localStorage before processing order
+      updateUserData(customerInfo);
+
+      // Create invoice data
+      const invoiceData: InvoiceData = {
+        orderNumber: newOrderNumber,
+        date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+        customerInfo: {
+          name: customerInfo.name,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+          area: customerInfo.area,
+          notes: customerInfo.notes,
+        },
+        items,
+        subtotal,
+        deliveryPrice,
+        total,
+        paymentMethod,
+        language,
+      };
+
+      // Generate and send invoice
+      const invoiceService = InvoiceService.getInstance();
+      
+      if (customerInfo.email) {
+        await invoiceService.sendInvoiceEmail(invoiceData, customerInfo.email);
+      }
+
+      // Simulate order processing delay
+      setTimeout(() => {
+        setIsProcessing(false);
+        setOrderComplete(true);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error processing order:', error);
+      setIsProcessing(false);
+      alert('حدث خطأ في معالجة الطلب. يرجى المحاولة مرة أخرى.');
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    const invoiceData: InvoiceData = {
+      orderNumber,
+      date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+      customerInfo: {
+        name: customerInfo.name,
+        phone: customerInfo.phone,
+        address: customerInfo.address,
+        area: customerInfo.area,
+        notes: customerInfo.notes,
+      },
+      items,
+      subtotal,
+      deliveryPrice,
+      total,
+      paymentMethod,
+      language,
+    };
+
+    const invoiceService = InvoiceService.getInstance();
+    await invoiceService.downloadInvoice(invoiceData);
+  };
+
+  const handleNewOrder = () => {
+    onOrderComplete();
+    onClose();
+  };
+
+  if (orderComplete) {
+    return (
+      <div className="checkout-overlay" onClick={onClose}>
+        <div className="checkout-container success" onClick={(e) => e.stopPropagation()}>
+          <div className="success-content">
+            <div className="success-icon">✅</div>
+            <h2>{currentTexts.orderSuccess}</h2>
+            <p>
+              <strong>{currentTexts.orderNumber}:</strong> {orderNumber}
+            </p>
+            
+            <div className="success-actions">
+              <button className="download-btn" onClick={handleDownloadInvoice}>
+                📄 {currentTexts.downloadInvoice}
+              </button>
+              <button className="new-order-btn" onClick={handleNewOrder}>
+                🛒 {currentTexts.newOrder}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="checkout-overlay" onClick={onClose}>
+      <div className="checkout-container" onClick={(e) => e.stopPropagation()}>
+        <div className="checkout-header">
+          <h2>{currentTexts.title}</h2>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="checkout-content">
+          <form onSubmit={handleSubmit} className="checkout-form">
+            {/* Customer Information */}
+            <div className="form-section">
+              <h3>{currentTexts.customerInfo}</h3>
+              
+              <div className="form-group">
+                <label>{currentTexts.name} *</label>
+                <input
+                  type="text"
+                  value={customerInfo.name}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{currentTexts.phone} *</label>
+                <input
+                  type="tel"
+                  value={customerInfo.phone}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{currentTexts.email}</label>
+                <input
+                  type="email"
+                  value={customerInfo.email}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{currentTexts.area} *</label>
+                <select
+                  value={customerInfo.area}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, area: e.target.value })}
+                  required
+                >
+                  <option value="">اختر المحافظة</option>
+                  {currentTexts.areas.map((area, index) => (
+                    <option key={index} value={area}>
+                      {area}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>{currentTexts.address} *</label>
+                <textarea
+                  value={customerInfo.address}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
+                  rows={3}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{currentTexts.notes}</label>
+                <textarea
+                  value={customerInfo.notes}
+                  onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
+                  rows={3}
+                  placeholder={language === 'ar' ? 'أي ملاحظات خاصة بالطلب...' : 'Any special notes for your order...'}
+                />
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="form-section">
+              <h3>{currentTexts.orderSummary}</h3>
+              
+              <div className="order-items">
+                {items.map((item) => (
+                  <div key={item.product.id} className="order-item">
+                    <span className="item-description">
+                      {item.product.name[language]} × {item.quantity} {item.selectedUnit.unit[language]}
+                    </span>
+                    <span className="item-total">
+                      {(item.selectedUnit.price * item.quantity).toFixed(3)} {currentTexts.currency}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="order-totals">
+                <div className="total-line">
+                  <span>{currentTexts.subtotal}:</span>
+                  <span>{subtotal.toFixed(3)} {currentTexts.currency}</span>
+                </div>
+                <div className="total-line">
+                  <span>{currentTexts.delivery}:</span>
+                  <span>{deliveryPrice.toFixed(3)} {currentTexts.currency}</span>
+                </div>
+                <div className="total-line final">
+                  <span>{currentTexts.total}:</span>
+                  <span>{total.toFixed(3)} {currentTexts.currency}</span>
+                </div>
+              </div>
+
+              <div className="payment-info">
+                <p>
+                  <strong>{currentTexts.paymentMethod}:</strong>{' '}
+                  {paymentMethod === 'cash' ? currentTexts.cash : currentTexts.link}
+                </p>
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              className="place-order-btn"
+              disabled={isProcessing}
+            >
+              {isProcessing ? currentTexts.processing : currentTexts.placeOrder}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Checkout;

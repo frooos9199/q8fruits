@@ -1,0 +1,370 @@
+.order-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(3px);
+}
+
+.order-modal-container {
+  background: white;
+  border-radius: 20px;
+  max-width: 800px;
+  width: 95%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.order-modal-header {
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  color: white;
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-modal-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  font-family: 'Cairo', sans-serif;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.order-modal-content {
+  padding: 2rem;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+}
+
+/* Order Info Section */
+.order-info-section {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  border: 1px solid #e5e7eb;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+  font-family: 'Cairo', sans-serif;
+}
+
+.info-item span {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.order-number {
+  font-family: 'Courier New', monospace;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* Customer Info Section */
+.customer-info-section {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  border: 1px solid #e5e7eb;
+}
+
+.customer-info-section h3 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+}
+
+/* Products Section */
+.products-section {
+  margin-bottom: 2rem;
+}
+
+.products-section h3 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+}
+
+.products-table {
+  background: #f8fafc;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.products-table .table-header {
+  background: #e5e7eb;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.products-table .table-row {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  align-items: center;
+}
+
+.products-table .table-row:last-child {
+  border-bottom: none;
+}
+
+.col {
+  font-size: 0.9rem;
+}
+
+.product-name {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.unit {
+  color: #6b7280;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.quantity {
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+}
+
+.price,
+.total {
+  text-align: right;
+  font-weight: 600;
+  color: #22c55e;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Order Summary */
+.order-summary {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  border: 1px solid #e5e7eb;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.summary-line:last-child {
+  margin-bottom: 0;
+}
+
+.total-line {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.75rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #22c55e;
+}
+
+/* Actions */
+.order-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.close-modal-btn,
+.download-invoice-btn {
+  padding: 0.75rem 2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Cairo', sans-serif;
+  min-width: 120px;
+}
+
+.close-modal-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.close-modal-btn:hover {
+  background: #e5e7eb;
+}
+
+.download-invoice-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+}
+
+.download-invoice-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .order-modal-container {
+    width: 98%;
+    margin: 1rem;
+  }
+  
+  .order-modal-header {
+    padding: 1.5rem;
+  }
+  
+  .order-modal-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .order-modal-content {
+    padding: 1rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .products-table .table-header,
+  .products-table .table-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .products-table .table-header {
+    display: none;
+  }
+  
+  .products-table .table-row {
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    padding: 1.5rem;
+  }
+  
+  .col::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #374151;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+  }
+}
+
+/* RTL Support */
+.rtl .order-modal-content {
+  direction: rtl;
+}
+
+.rtl .info-grid {
+  direction: rtl;
+}
+
+.rtl .products-table {
+  direction: rtl;
+}
+
+.rtl .order-actions {
+  flex-direction: row-reverse;
+}
