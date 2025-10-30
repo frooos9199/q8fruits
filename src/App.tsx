@@ -59,8 +59,24 @@ const App: React.FC = () => {
     }
   }, [cartItems]);
 
-  // Sample products data
-  const [products, setProducts] = useState<Product[]>([
+  // Load products from localStorage if available
+  useEffect(() => {
+    try {
+      const savedProducts = localStorage.getItem('products');
+      if (savedProducts) {
+        const parsedProducts = JSON.parse(savedProducts);
+        setProducts(parsedProducts);
+      } else {
+        // Save default products to localStorage if not exists
+        localStorage.setItem('products', JSON.stringify(defaultProducts));
+      }
+    } catch (error) {
+      console.error('Error loading products from localStorage:', error);
+    }
+  }, []); // Empty dependency array to run only once
+
+  // Sample products data - moved to separate variable
+  const defaultProducts: Product[] = [
     {
       id: 1,
       name: { ar: 'تفاح أحمر', en: 'Red Apple' },
@@ -398,7 +414,10 @@ const App: React.FC = () => {
       isPublished: true,
       stock: 10
     }
-  ]);
+  ];
+
+  // Products state
+  const [products, setProducts] = useState<Product[]>(defaultProducts);
 
   const addToCart = (product: Product, selectedUnit: ProductUnit, quantity: number) => {
     const existingItem = cartItems.find(item => 
