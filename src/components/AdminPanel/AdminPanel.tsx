@@ -81,7 +81,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newProduct, setNewProduct] = useState({
     name: { ar: '', en: '' },
     category: 'fruits' as ProductCategory,
-    prices: [{ quantity: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0 }],
+    units: [{ id: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0, isDefault: true }],
     image: '',
     description: { ar: '', en: '' },
     isPublished: false
@@ -584,7 +584,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Add new product
   const handleAddProduct = () => {
-    if (!newProduct.name.ar || !newProduct.name.en || !newProduct.prices[0].price) {
+    if (!newProduct.name.ar || !newProduct.name.en || !newProduct.units[0].price) {
       alert('يرجى ملء جميع الحقول المطلوبة');
       return;
     }
@@ -592,12 +592,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     const productToAdd = {
       name: newProduct.name,
       category: newProduct.category,
-      units: [{
-        id: 1,
-        unit: newProduct.prices[0].unit,
-        price: newProduct.prices[0].price,
-        isDefault: true
-      }],
+      units: newProduct.units,
       images: newProduct.image ? [newProduct.image] : [],
       description: newProduct.description,
       stock: 100, // Default stock
@@ -609,7 +604,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setNewProduct({
       name: { ar: '', en: '' },
       category: 'fruits' as ProductCategory,
-      prices: [{ quantity: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0 }],
+      units: [{ id: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0, isDefault: true }],
       image: '',
       description: { ar: '', en: '' },
       isPublished: false
@@ -1762,51 +1757,96 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>السعر:</label>
-                  <input
-                    type="number"
-                    step="0.001"
-                    value={newProduct.prices[0].price}
-                    onChange={(e) => setNewProduct(prev => ({
-                      ...prev,
-                      prices: [{
-                        ...prev.prices[0],
-                        price: parseFloat(e.target.value) || 0
-                      }]
-                    }))}
-                    placeholder="0.000"
-                  />
-                  <span>د.ك</span>
-                </div>
-                <div className="form-group">
-                  <label>الوحدة (عربي):</label>
-                  <input
-                    type="text"
-                    value={newProduct.prices[0].unit.ar}
-                    onChange={(e) => setNewProduct(prev => ({
-                      ...prev,
-                      prices: [{
-                        ...prev.prices[0],
-                        unit: { ...prev.prices[0].unit, ar: e.target.value }
-                      }]
-                    }))}
-                    placeholder="كيلو"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>الوحدة (إنجليزي):</label>
-                  <input
-                    type="text"
-                    value={newProduct.prices[0].unit.en}
-                    onChange={(e) => setNewProduct(prev => ({
-                      ...prev,
-                      prices: [{
-                        ...prev.prices[0],
-                        unit: { ...prev.prices[0].unit, en: e.target.value }
-                      }]
-                    }))}
-                    placeholder="kg"
-                  />
+                  <label>الوحدات والأسعار:</label>
+                  <div className="units-container">
+                    {newProduct.units.map((unit, index) => (
+                      <div key={index} className="unit-row">
+                        <div className="unit-inputs">
+                          <input
+                            type="text"
+                            placeholder="الوحدة (عربي)"
+                            value={unit.unit.ar}
+                            onChange={(e) => setNewProduct(prev => ({
+                              ...prev,
+                              units: prev.units.map((u, i) => 
+                                i === index ? { ...u, unit: { ...u.unit, ar: e.target.value } } : u
+                              )
+                            }))}
+                            className="unit-input"
+                          />
+                          <input
+                            type="text"
+                            placeholder="الوحدة (إنجليزي)"
+                            value={unit.unit.en}
+                            onChange={(e) => setNewProduct(prev => ({
+                              ...prev,
+                              units: prev.units.map((u, i) => 
+                                i === index ? { ...u, unit: { ...u.unit, en: e.target.value } } : u
+                              )
+                            }))}
+                            className="unit-input"
+                          />
+                          <input
+                            type="number"
+                            step="0.001"
+                            placeholder="السعر"
+                            value={unit.price}
+                            onChange={(e) => setNewProduct(prev => ({
+                              ...prev,
+                              units: prev.units.map((u, i) => 
+                                i === index ? { ...u, price: parseFloat(e.target.value) || 0 } : u
+                              )
+                            }))}
+                            className="price-input"
+                          />
+                          <span className="currency">د.ك</span>
+                        </div>
+                        <div className="unit-actions">
+                          <label className="default-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={unit.isDefault}
+                              onChange={(e) => setNewProduct(prev => ({
+                                ...prev,
+                                units: prev.units.map((u, i) => ({
+                                  ...u,
+                                  isDefault: i === index ? e.target.checked : false
+                                }))
+                              }))}
+                            />
+                            افتراضي
+                          </label>
+                          {newProduct.units.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setNewProduct(prev => ({
+                                ...prev,
+                                units: prev.units.filter((_, i) => i !== index)
+                              }))}
+                              className="remove-unit-btn"
+                            >
+                              ❌
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setNewProduct(prev => ({
+                        ...prev,
+                        units: [...prev.units, {
+                          id: Date.now(),
+                          unit: { ar: '', en: '' },
+                          price: 0,
+                          isDefault: false
+                        }]
+                      }))}
+                      className="add-unit-btn"
+                    >
+                      ➕ إضافة وحدة جديدة
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>الصورة:</label>
@@ -1949,48 +1989,96 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>السعر:</label>
-                  <input
-                    type="number"
-                    step="0.001"
-                    value={editingProduct.units[0]?.price || 0}
-                    onChange={(e) => setEditingProduct(prev => prev ? ({
-                      ...prev,
-                      units: prev.units.map((unit, index) => 
-                        index === 0 ? { ...unit, price: parseFloat(e.target.value) || 0 } : unit
-                      )
-                    }) : null)}
-                    placeholder="0.000"
-                  />
-                  <span>د.ك</span>
-                </div>
-                <div className="form-group">
-                  <label>الوحدة (عربي):</label>
-                  <input
-                    type="text"
-                    value={editingProduct.units[0]?.unit.ar || ''}
-                    onChange={(e) => setEditingProduct(prev => prev ? ({
-                      ...prev,
-                      units: prev.units.map((unit, index) => 
-                        index === 0 ? { ...unit, unit: { ...unit.unit, ar: e.target.value } } : unit
-                      )
-                    }) : null)}
-                    placeholder="كيلو"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>الوحدة (إنجليزي):</label>
-                  <input
-                    type="text"
-                    value={editingProduct.units[0]?.unit.en || ''}
-                    onChange={(e) => setEditingProduct(prev => prev ? ({
-                      ...prev,
-                      units: prev.units.map((unit, index) => 
-                        index === 0 ? { ...unit, unit: { ...unit.unit, en: e.target.value } } : unit
-                      )
-                    }) : null)}
-                    placeholder="kg"
-                  />
+                  <label>الوحدات والأسعار:</label>
+                  <div className="units-container">
+                    {editingProduct.units.map((unit, index) => (
+                      <div key={unit.id || index} className="unit-row">
+                        <div className="unit-inputs">
+                          <input
+                            type="text"
+                            placeholder="الوحدة (عربي)"
+                            value={unit.unit.ar}
+                            onChange={(e) => setEditingProduct(prev => prev ? ({
+                              ...prev,
+                              units: prev.units.map((u, i) => 
+                                i === index ? { ...u, unit: { ...u.unit, ar: e.target.value } } : u
+                              )
+                            }) : null)}
+                            className="unit-input"
+                          />
+                          <input
+                            type="text"
+                            placeholder="الوحدة (إنجليزي)"
+                            value={unit.unit.en}
+                            onChange={(e) => setEditingProduct(prev => prev ? ({
+                              ...prev,
+                              units: prev.units.map((u, i) => 
+                                i === index ? { ...u, unit: { ...u.unit, en: e.target.value } } : u
+                              )
+                            }) : null)}
+                            className="unit-input"
+                          />
+                          <input
+                            type="number"
+                            step="0.001"
+                            placeholder="السعر"
+                            value={unit.price}
+                            onChange={(e) => setEditingProduct(prev => prev ? ({
+                              ...prev,
+                              units: prev.units.map((u, i) => 
+                                i === index ? { ...u, price: parseFloat(e.target.value) || 0 } : u
+                              )
+                            }) : null)}
+                            className="price-input"
+                          />
+                          <span className="currency">د.ك</span>
+                        </div>
+                        <div className="unit-actions">
+                          <label className="default-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={unit.isDefault}
+                              onChange={(e) => setEditingProduct(prev => prev ? ({
+                                ...prev,
+                                units: prev.units.map((u, i) => ({
+                                  ...u,
+                                  isDefault: i === index ? e.target.checked : false
+                                }))
+                              }) : null)}
+                            />
+                            افتراضي
+                          </label>
+                          {editingProduct.units.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingProduct(prev => prev ? ({
+                                ...prev,
+                                units: prev.units.filter((_, i) => i !== index)
+                              }) : null)}
+                              className="remove-unit-btn"
+                            >
+                              ❌
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setEditingProduct(prev => prev ? ({
+                        ...prev,
+                        units: [...prev.units, {
+                          id: Date.now(),
+                          unit: { ar: '', en: '' },
+                          price: 0,
+                          isDefault: false
+                        }]
+                      }) : null)}
+                      className="add-unit-btn"
+                    >
+                      ➕ إضافة وحدة جديدة
+                    </button>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>الصورة:</label>
