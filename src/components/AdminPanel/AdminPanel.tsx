@@ -387,7 +387,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           body { font-family: 'Arial', sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
           .invoice { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
           .header { text-align: center; border-bottom: 3px solid #4CAF50; padding-bottom: 20px; margin-bottom: 30px; }
-          .logo { font-size: 2rem; color: #4CAF50; font-weight: bold; margin-bottom: 10px; }
+          .logo-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+          .logo-image { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #4CAF50; }
+          .logo { font-size: 2rem; color: #4CAF50; font-weight: bold; }
           .company-info { color: #666; font-size: 0.9rem; }
           .contact-info { color: #4CAF50; font-weight: bold; margin-top: 10px; }
           .invoice-details { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
@@ -410,7 +412,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       <body>
         <div class="invoice">
           <div class="header">
-            <div class="logo">🍎 فكهاني الكويت - Q8 Fruit</div>
+            <div class="logo-container">
+              <img src="/images/logo.jpeg" alt="فكهاني الكويت" class="logo-image">
+              <div class="logo">فكهاني الكويت - Q8 Fruit</div>
+            </div>
             <div class="company-info">
               أفضل الفواكه والخضار الطازجة في الكويت<br>
               هاتف: 98899426 | بريد إلكتروني: summit_kw@hotmail.com

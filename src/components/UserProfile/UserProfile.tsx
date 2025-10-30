@@ -354,6 +354,8 @@ const UserProfile: React.FC<UserProfileProps> = ({
             <style>
               body { font-family: Arial, sans-serif; padding: 20px; direction: rtl; }
               .header { text-align: center; margin-bottom: 30px; }
+              .logo-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+              .logo-image { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #4caf50; }
               .company-name { color: #4caf50; font-size: 24px; font-weight: bold; }
               .invoice-details { margin: 20px 0; }
               .customer-info { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; }
@@ -368,7 +370,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
           </head>
           <body>
             <div class="header">
-              <div class="company-name">🍎 فكهاني الكويت</div>
+              <div class="logo-container">
+                <img src="/images/logo.jpeg" alt="فكهاني الكويت" class="logo-image">
+                <div class="company-name">فكهاني الكويت</div>
+              </div>
               <p>أفضل الفواكه والخضار الطازجة</p>
               <p>للاستفسار والطلبات: 98899426</p>
               <p>بريد إلكتروني: summit_kw@hotmail.com</p>
