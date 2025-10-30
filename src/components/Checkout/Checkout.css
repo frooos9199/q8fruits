@@ -4,34 +4,37 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.3s ease;
 }
 
 .checkout-container {
-  background: white;
-  border-radius: 20px;
-  max-width: 600px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
+  border-radius: var(--radius-2xl);
+  max-width: 700px;
   width: 95%;
   max-height: 90vh;
   overflow: hidden;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
-  animation: slideIn 0.4s ease-out;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--gray-200);
+  animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .checkout-container.success {
-  max-width: 400px;
-  max-height: 400px;
+  max-width: 500px;
+  max-height: 600px;
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: scale(0.8) translateY(-50px);
+    transform: scale(0.85) translateY(-60px);
   }
   to {
     opacity: 1;
@@ -40,12 +43,23 @@
 }
 
 .checkout-header {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
   color: white;
-  padding: 2rem;
+  padding: var(--space-8);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+}
+
+.checkout-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
 }
 
 .checkout-header h2 {
@@ -277,94 +291,123 @@
 .success-actions {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
 }
 
 .download-btn,
 .email-btn,
 .whatsapp-btn,
 .new-order-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
-  font-weight: 600;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-xl);
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'Cairo', sans-serif;
-  font-size: 1rem;
+  font-size: var(--text-lg);
   width: 100%;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
 }
 
 .download-btn {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
-  border: none;
 }
 
 .download-btn:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
 }
 
 .email-btn {
-  background: #dc2626;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #ea580c 100%);
   color: white;
-  border: none;
 }
 
 .email-btn:hover {
-  background: #b91c1c;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
 }
 
 .whatsapp-btn {
-  background: #25d366;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
-  border: none;
 }
 
 .whatsapp-btn:hover {
-  background: #128c7e;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
 }
 
 .new-order-btn {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #059669 100%);
+  color: white;
 }
 
 .new-order-btn:hover {
-  background: #e5e7eb;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .checkout-container {
-    width: 98%;
-    margin: 1rem;
+    width: 96%;
+    margin: var(--space-2);
+    border-radius: var(--radius-lg);
   }
   
   .checkout-header {
-    padding: 1.5rem;
+    padding: var(--space-6);
   }
   
   .checkout-header h2 {
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
   }
   
   .checkout-content {
-    padding: 1rem;
+    padding: var(--space-4);
   }
   
-  .form-section {
-    padding: 1rem;
+  .form-group {
+    margin-bottom: var(--space-4);
   }
   
-  .success-content {
-    padding: 2rem 1rem;
+  .cart-summary {
+    padding: var(--space-4);
+  }
+  
+  .total-section {
+    padding: var(--space-4);
   }
   
   .success-actions {
-    gap: 0.75rem;
+    gap: var(--space-3);
+  }
+  
+  .download-btn,
+  .email-btn,
+  .whatsapp-btn,
+  .new-order-btn {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+  }
+  
+  .form-section {
+    padding: var(--space-4);
+  }
+  
+  .success-content {
+    padding: var(--space-8) var(--space-4);
   }
 }
