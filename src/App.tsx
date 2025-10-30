@@ -6,6 +6,7 @@ import Cart from './components/Cart/Cart.tsx';
 import AdminPanel from './components/AdminPanel/AdminPanel.tsx';
 import Login from './components/Login/Login.tsx';
 import Checkout from './components/Checkout/Checkout.tsx';
+import UserProfile from './components/UserProfile/UserProfile.tsx';
 import { Language, Product, CartItem, ProductUnit } from './types';
 
 const App: React.FC = () => {
@@ -15,6 +16,7 @@ const App: React.FC = () => {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<'admin' | 'user'>('user');
   const [userName, setUserName] = useState('');
@@ -490,6 +492,7 @@ const App: React.FC = () => {
         userName={userName}
         userEmail={userEmail}
         onLogout={handleLogout}
+        onProfileClick={() => setIsProfileOpen(true)}
       />
       
       <main className="main-content">
@@ -541,6 +544,29 @@ const App: React.FC = () => {
           onClose={() => setIsCheckoutOpen(false)}
           onOrderComplete={handleOrderComplete}
         />
+      )}
+
+      {isProfileOpen && isLoggedIn && (
+        <div className="profile-modal-overlay" onClick={() => setIsProfileOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <UserProfile
+              language={language}
+              userType={userType}
+              userName={userName}
+              userEmail={userEmail}
+              onLogout={() => {
+                setIsProfileOpen(false);
+                handleLogout();
+              }}
+              onAdminPanel={userType === 'admin' ? () => {
+                setIsProfileOpen(false);
+                setIsAdminOpen(true);
+              } : undefined}
+              isDropdown={false}
+              onClose={() => setIsProfileOpen(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
