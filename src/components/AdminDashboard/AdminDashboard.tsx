@@ -195,9 +195,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ language }) => {
   };
 
   const texts = {
-        customerAddress: 'الفروانية، شقة 18',
-        customerArea: 'الفروانية',
-  const texts = {
     ar: {
       dashboard: 'لوحة المعلومات',
       orderStats: 'إحصائيات الطلبات',
@@ -235,7 +232,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ language }) => {
       link: 'دفع إلكتروني',
       currency: 'د.ك',
       viewOrder: 'عرض الطلب',
-      downloadInvoice: 'تحميل الفاتورة'
+      downloadInvoice: 'تحميل الفاتورة',
+      orderNumber: 'رقم الطلب',
+      customer: 'العميل',
+      viewAll: 'عرض الكل',
+      refresh: 'تحديث',
+      viewInvoice: 'انقر على رقم الطلب لعرض الفاتورة'
     },
     en: {
       dashboard: 'Dashboard',
@@ -274,84 +276,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ language }) => {
       link: 'Online Payment',
       currency: 'KD',
       viewOrder: 'View Order',
-      downloadInvoice: 'Download Invoice'
-    }
-  };
-
-  const currentTexts = texts[language];
-    ar: {
-      dashboard: 'لوحة المعلومات',
-      orderStats: 'إحصائيات الطلبات',
-      userStats: 'إحصائيات المستخدمين',
-      recentOrders: 'الطلبات الأخيرة',
-      orderChart: 'مخطط الطلبات الأسبوعي',
-      totalOrders: 'إجمالي الطلبات',
-      todayOrders: 'طلبات اليوم',
-      weekOrders: 'طلبات الأسبوع',
-      monthOrders: 'طلبات الشهر',
-      totalRevenue: 'إجمالي الإيرادات',
-      todayRevenue: 'إيرادات اليوم',
-      weekRevenue: 'إيرادات الأسبوع',
-      monthRevenue: 'إيرادات الشهر',
-      pendingOrders: 'طلبات معلقة',
-      completedOrders: 'طلبات مكتملة',
-      cancelledOrders: 'طلبات ملغية',
-      totalUsers: 'إجمالي المستخدمين',
-      newUsersToday: 'مستخدمين جدد اليوم',
-      newUsersWeek: 'مستخدمين جدد هذا الأسبوع',
-      newUsersMonth: 'مستخدمين جدد هذا الشهر',
-      activeUsers: 'مستخدمين نشطين',
-      orderNumber: 'رقم الطلب',
-      customer: 'العميل',
-      total: 'المجموع',
-      status: 'الحالة',
-      date: 'التاريخ',
-      items: 'عدد المنتجات',
-      pending: 'معلق',
-      completed: 'مكتمل',
-      cancelled: 'ملغي',
-      currency: 'د.ك',
-      viewAll: 'عرض الكل',
-      refresh: 'تحديث',
-      viewInvoice: 'انقر على رقم الطلب لعرض الفاتورة',
-      downloadInvoice: 'تحميل الفاتورة'
-    },
-    en: {
-      dashboard: 'Dashboard',
-      orderStats: 'Order Statistics',
-      userStats: 'User Statistics',
-      recentOrders: 'Recent Orders',
-      orderChart: 'Weekly Orders Chart',
-      totalOrders: 'Total Orders',
-      todayOrders: 'Today Orders',
-      weekOrders: 'Week Orders',
-      monthOrders: 'Month Orders',
-      totalRevenue: 'Total Revenue',
-      todayRevenue: 'Today Revenue',
-      weekRevenue: 'Week Revenue',
-      monthRevenue: 'Month Revenue',
-      pendingOrders: 'Pending Orders',
-      completedOrders: 'Completed Orders',
-      cancelledOrders: 'Cancelled Orders',
-      totalUsers: 'Total Users',
-      newUsersToday: 'New Users Today',
-      newUsersWeek: 'New Users This Week',
-      newUsersMonth: 'New Users This Month',
-      activeUsers: 'Active Users',
+      downloadInvoice: 'Download Invoice',
       orderNumber: 'Order Number',
       customer: 'Customer',
-      total: 'Total',
-      status: 'Status',
-      date: 'Date',
-      items: 'Items',
-      pending: 'Pending',
-      completed: 'Completed',
-      cancelled: 'Cancelled',
-      currency: 'KWD',
       viewAll: 'View All',
       refresh: 'Refresh',
-      viewInvoice: 'View Invoice',
-      downloadInvoice: 'Download Invoice'
+      viewInvoice: 'Click order number to view invoice'
     }
   };
 

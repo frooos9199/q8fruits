@@ -76,13 +76,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: { ar: '', en: '' },
     category: 'fruits' as ProductCategory,
     prices: [{ quantity: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0 }],
     image: '',
     description: { ar: '', en: '' },
-    inStock: true,
     isPublished: false
   });
 
@@ -497,9 +497,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleEditProduct = (productId: number) => {
     const product = products.find(p => p.id === productId);
     if (product) {
-      // For now, just show alert. In future, open edit modal
-      alert(`تعديل المنتج: ${language === 'ar' ? product.name.ar : product.name.en}`);
-      // TODO: Implement product editing modal
+      setEditingProduct(product);
+      setShowEditProductModal(true);
     }
   };
 
@@ -533,7 +532,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     const productToAdd = {
       name: newProduct.name,
       category: newProduct.category,
-      prices: newProduct.prices,
       units: [{
         id: 1,
         unit: newProduct.prices[0].unit,
@@ -541,9 +539,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         isDefault: true
       }],
       images: newProduct.image ? [newProduct.image] : [],
-      image: newProduct.image,
       description: newProduct.description,
-      inStock: newProduct.inStock,
       stock: 100, // Default stock
       isPublished: newProduct.isPublished
     };
@@ -556,10 +552,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       prices: [{ quantity: 1, unit: { ar: 'كيلو', en: 'kg' }, price: 0 }],
       image: '',
       description: { ar: '', en: '' },
-      inStock: true,
       isPublished: false
     });
     alert('تم إضافة المنتج بنجاح');
+  };
+
+  const handleEditProductSave = () => {
+    if (!editingProduct) return;
+
+    if (!editingProduct.name.ar || !editingProduct.name.en || !editingProduct.units[0]?.price) {
+      alert('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const updatedProducts = products.map(product =>
+      product.id === editingProduct.id ? editingProduct : product
+    );
+
+    // Update products in localStorage
+    try {
+      localStorage.setItem('products', JSON.stringify(updatedProducts));
+      setShowEditProductModal(false);
+      setEditingProduct(null);
+      alert('تم تحديث المنتج بنجاح');
+      window.location.reload(); // Refresh to show updated data
+    } catch (error) {
+      console.error('Error updating product:', error);
+      alert('حدث خطأ في تحديث المنتج');
+    }
   };
 
   // Save delivery settings
@@ -1068,7 +1088,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <span>د.ك</span>
           </div>
           <div className="setting-item">
-            <label>حد التوصيل المجاني:</label>
+            <label>الحد الأدنى للتوصيل:</label>
             <input
               type="number"
               step="0.001"
@@ -1625,6 +1645,335 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 </button>
                 <button className="cancel-btn" onClick={closeViewOrder}>
                   ❌ إغلاق
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Product Modal */}
+        {showAddProductModal && (
+          <div className="modal-overlay" onClick={() => setShowAddProductModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>➕ إضافة منتج جديد</h3>
+                <button className="modal-close-btn" onClick={() => setShowAddProductModal(false)}>✖️</button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>اسم المنتج (عربي):</label>
+                  <input
+                    type="text"
+                    value={newProduct.name.ar}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      name: { ...prev.name, ar: e.target.value }
+                    }))}
+                    placeholder="أدخل اسم المنتج بالعربية"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>اسم المنتج (إنجليزي):</label>
+                  <input
+                    type="text"
+                    value={newProduct.name.en}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      name: { ...prev.name, en: e.target.value }
+                    }))}
+                    placeholder="Enter product name in English"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الفئة:</label>
+                  <select
+                    value={newProduct.category}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      category: e.target.value as ProductCategory
+                    }))}
+                  >
+                    <option value="fruits">فواكه</option>
+                    <option value="vegetables">خضار</option>
+                    <option value="herbs">أعشاب</option>
+                    <option value="nuts">مكسرات</option>
+                    <option value="dairy">ألبان</option>
+                    <option value="beverages">مشروبات</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>السعر:</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={newProduct.prices[0].price}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      prices: [{
+                        ...prev.prices[0],
+                        price: parseFloat(e.target.value) || 0
+                      }]
+                    }))}
+                    placeholder="0.000"
+                  />
+                  <span>د.ك</span>
+                </div>
+                <div className="form-group">
+                  <label>الوحدة (عربي):</label>
+                  <input
+                    type="text"
+                    value={newProduct.prices[0].unit.ar}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      prices: [{
+                        ...prev.prices[0],
+                        unit: { ...prev.prices[0].unit, ar: e.target.value }
+                      }]
+                    }))}
+                    placeholder="كيلو"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الوحدة (إنجليزي):</label>
+                  <input
+                    type="text"
+                    value={newProduct.prices[0].unit.en}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      prices: [{
+                        ...prev.prices[0],
+                        unit: { ...prev.prices[0].unit, en: e.target.value }
+                      }]
+                    }))}
+                    placeholder="kg"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>رابط الصورة:</label>
+                  <input
+                    type="url"
+                    value={newProduct.image}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      image: e.target.value
+                    }))}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الوصف (عربي):</label>
+                  <textarea
+                    value={newProduct.description.ar}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      description: { ...prev.description, ar: e.target.value }
+                    }))}
+                    placeholder="وصف المنتج بالعربية"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الوصف (إنجليزي):</label>
+                  <textarea
+                    value={newProduct.description.en}
+                    onChange={(e) => setNewProduct(prev => ({
+                      ...prev,
+                      description: { ...prev.description, en: e.target.value }
+                    }))}
+                    placeholder="Product description in English"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={newProduct.isPublished}
+                      onChange={(e) => setNewProduct(prev => ({
+                        ...prev,
+                        isPublished: e.target.checked
+                      }))}
+                    />
+                    منشور للعملاء
+                  </label>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="save-btn" onClick={handleAddProduct}>
+                  ✅ إضافة المنتج
+                </button>
+                <button className="cancel-btn" onClick={() => setShowAddProductModal(false)}>
+                  ❌ إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Product Modal */}
+        {showEditProductModal && editingProduct && (
+          <div className="modal-overlay" onClick={() => setShowEditProductModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>✏️ تعديل المنتج</h3>
+                <button className="modal-close-btn" onClick={() => setShowEditProductModal(false)}>✖️</button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>اسم المنتج (عربي):</label>
+                  <input
+                    type="text"
+                    value={editingProduct.name.ar}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      name: { ...prev.name, ar: e.target.value }
+                    }) : null)}
+                    placeholder="أدخل اسم المنتج بالعربية"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>اسم المنتج (إنجليزي):</label>
+                  <input
+                    type="text"
+                    value={editingProduct.name.en}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      name: { ...prev.name, en: e.target.value }
+                    }) : null)}
+                    placeholder="Enter product name in English"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الفئة:</label>
+                  <select
+                    value={editingProduct.category}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      category: e.target.value as ProductCategory
+                    }) : null)}
+                  >
+                    <option value="fruits">فواكه</option>
+                    <option value="vegetables">خضار</option>
+                    <option value="herbs">أعشاب</option>
+                    <option value="nuts">مكسرات</option>
+                    <option value="dairy">ألبان</option>
+                    <option value="beverages">مشروبات</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>السعر:</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={editingProduct.units[0]?.price || 0}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      units: prev.units.map((unit, index) => 
+                        index === 0 ? { ...unit, price: parseFloat(e.target.value) || 0 } : unit
+                      )
+                    }) : null)}
+                    placeholder="0.000"
+                  />
+                  <span>د.ك</span>
+                </div>
+                <div className="form-group">
+                  <label>الوحدة (عربي):</label>
+                  <input
+                    type="text"
+                    value={editingProduct.units[0]?.unit.ar || ''}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      units: prev.units.map((unit, index) => 
+                        index === 0 ? { ...unit, unit: { ...unit.unit, ar: e.target.value } } : unit
+                      )
+                    }) : null)}
+                    placeholder="كيلو"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الوحدة (إنجليزي):</label>
+                  <input
+                    type="text"
+                    value={editingProduct.units[0]?.unit.en || ''}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      units: prev.units.map((unit, index) => 
+                        index === 0 ? { ...unit, unit: { ...unit.unit, en: e.target.value } } : unit
+                      )
+                    }) : null)}
+                    placeholder="kg"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>رابط الصورة:</label>
+                  <input
+                    type="url"
+                    value={editingProduct.images[0] || ''}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      images: [e.target.value]
+                    }) : null)}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الوصف (عربي):</label>
+                  <textarea
+                    value={editingProduct.description?.ar || ''}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      description: { 
+                        ar: e.target.value, 
+                        en: prev.description?.en || '' 
+                      }
+                    }) : null)}
+                    placeholder="وصف المنتج بالعربية"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الوصف (إنجليزي):</label>
+                  <textarea
+                    value={editingProduct.description?.en || ''}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      description: { 
+                        ar: prev.description?.ar || '', 
+                        en: e.target.value 
+                      }
+                    }) : null)}
+                    placeholder="Product description in English"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>المخزون:</label>
+                  <input
+                    type="number"
+                    value={editingProduct.stock || 0}
+                    onChange={(e) => setEditingProduct(prev => prev ? ({
+                      ...prev,
+                      stock: parseInt(e.target.value) || 0
+                    }) : null)}
+                    placeholder="الكمية المتوفرة"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={editingProduct.isPublished}
+                      onChange={(e) => setEditingProduct(prev => prev ? ({
+                        ...prev,
+                        isPublished: e.target.checked
+                      }) : null)}
+                    />
+                    منشور للعملاء
+                  </label>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="save-btn" onClick={handleEditProductSave}>
+                  ✅ حفظ التغييرات
+                </button>
+                <button className="cancel-btn" onClick={() => setShowEditProductModal(false)}>
+                  ❌ إلغاء
                 </button>
               </div>
             </div>
