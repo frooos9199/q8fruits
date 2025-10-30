@@ -424,15 +424,32 @@ const App: React.FC = () => {
   };
 
   const updateProduct = (id: number, productData: Partial<Product>) => {
-    setProducts(products.map(product =>
+    const updatedProducts = products.map(product =>
       product.id === id ? { ...product, ...productData } : product
-    ));
+    );
+    setProducts(updatedProducts);
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('products', JSON.stringify(updatedProducts));
+    } catch (error) {
+      console.error('Error saving updated product to localStorage:', error);
+    }
   };
 
   const deleteProduct = (id: number) => {
-    setProducts(products.filter(product => product.id !== id));
+    const updatedProducts = products.filter(product => product.id !== id);
+    setProducts(updatedProducts);
+    
     // Remove from cart if exists
     setCartItems(cartItems.filter(item => item.product.id !== id));
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('products', JSON.stringify(updatedProducts));
+    } catch (error) {
+      console.error('Error saving after product deletion to localStorage:', error);
+    }
   };
 
   // Authentication functions

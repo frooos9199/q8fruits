@@ -518,7 +518,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     if (product) {
       const updatedProduct = { ...product, isPublished: !product.isPublished };
       onUpdateProduct(productId, updatedProduct);
-      alert(updatedProduct.isPublished ? 'تم نشر المنتج' : 'تم إخفاء المنتج');
+      alert(updatedProduct.isPublished ? 'تم نشر المنتج بنجاح ✅' : 'تم إخفاء المنتج بنجاح 🔒');
+      
+      // Refresh the page to show updated status
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 
