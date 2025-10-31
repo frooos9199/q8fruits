@@ -383,40 +383,40 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // View order details and invoice
   const openViewOrder = (order: Order) => {
-    console.log('Opening order view modal...');
-    console.log('Order data:', order);
+    console.log('🔍 فتح عرض الطلب...');
+    console.log('📊 بيانات الطلب:', order);
     
     if (!order) {
-      console.error('No order data provided');
-      alert('لا توجد بيانات للطلب');
+      console.error('❌ لا توجد بيانات طلب');
+      alert('❌ لا توجد بيانات للطلب');
       return;
     }
 
-    // Validate order data
-    if (!order.orderNumber || !order.items) {
-      console.error('Invalid order data:', order);
-      alert('بيانات الطلب غير صحيحة');
-      return;
-    }
+    // إنشاء نسخة محسنة من الطلب مع ضمان وجود كل البيانات المطلوبة
+    const enhancedOrder = {
+      ...order,
+      orderNumber: order.orderNumber || `ORD-${Date.now()}`,
+      date: order.date || new Date().toLocaleDateString('ar-SA'),
+      userName: order.userName || 'عميل غير محدد',
+      userEmail: order.userEmail || 'غير محدد',
+      items: Array.isArray(order.items) ? order.items : [],
+      total: Number(order.total) || 0,
+      deliveryPrice: Number(order.deliveryPrice) || 0,
+      paymentMethod: order.paymentMethod || 'نقداً عند التوصيل',
+      status: order.status || 'pending',
+      customerInfo: {
+        name: order.customerInfo?.name || order.userName || 'عميل غير محدد',
+        phone: order.customerInfo?.phone || 'غير محدد',
+        address: order.customerInfo?.address || 'غير محدد',
+        area: order.customerInfo?.area || 'غير محدد',
+        notes: order.customerInfo?.notes || ''
+      }
+    };
     
-    // Ensure items is an array
-    if (!Array.isArray(order.items)) {
-      console.warn('Order items is not an array, converting...');
-      order.items = [];
-    }
+    console.log('✅ بيانات محسنة:', enhancedOrder);
+    console.log('🎯 فتح النافذة المنبثقة...');
     
-    // Ensure customer info exists
-    if (!order.customerInfo) {
-      order.customerInfo = {
-        name: order.userName || 'غير محدد',
-        phone: 'غير محدد',
-        address: 'غير محدد',
-        area: 'غير محدد'
-      };
-    }
-    
-    console.log('Validated order data:', order);
-    setViewingOrder(order);
+    setViewingOrder(enhancedOrder);
     setShowOrderViewModal(true);
   };
 

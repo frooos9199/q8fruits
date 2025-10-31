@@ -938,6 +938,7 @@ input:checked + .slider:before {
   max-height: 95%;
   background: white !important;
   z-index: 1001;
+  overflow-y: auto;
 }
 
 .invoice-container {
@@ -945,6 +946,7 @@ input:checked + .slider:before {
   background: white;
   min-height: 400px;
   border-radius: 8px;
+  position: relative;
 }
 
 .invoice-header {
