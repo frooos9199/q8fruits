@@ -62,6 +62,7 @@ export interface DeliveryInfo {
 
 export interface Order {
   id: string;
+  orderNumber: string;
   items: CartItem[];
   deliveryPrice: number;
   totalPrice: number;
@@ -72,6 +73,20 @@ export interface Order {
     address: string;
     area: string;
   };
+  userEmail: string;
   status: 'pending' | 'confirmed' | 'delivered' | 'cancelled';
   createdAt: Date;
+  date: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  address?: string;
+  area?: string;
+  isAdmin?: boolean;
+  registeredAt: string;
 }
