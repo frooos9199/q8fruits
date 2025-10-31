@@ -8,7 +8,6 @@ import Login from './components/Login/Login.tsx';
 import Checkout from './components/Checkout/Checkout.tsx';
 import UserProfile from './components/UserProfile/UserProfile.tsx';
 import TestCheckout from './components/TestCheckout/TestCheckout.tsx';
-import ProductPage from './components/ProductPage/ProductPage.tsx';
 import AddProductPage from './components/AddProductPage/AddProductPage.tsx';
 import { Language, Product, CartItem, ProductUnit } from './types';
 
@@ -27,8 +26,6 @@ const App: React.FC = () => {
   const [userEmail, setUserEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'link' | 'cash'>('cash');
   const [deliveryPrice] = useState(2.000);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isProductPageOpen, setIsProductPageOpen] = useState(false);
   const [isAddProductPageOpen, setIsAddProductPageOpen] = useState(false);
 
   // Check if user is already logged in
@@ -469,16 +466,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleOpenProduct = (product: Product) => {
-    setSelectedProduct(product);
-    setIsProductPageOpen(true);
-  };
-
-  const handleCloseProductPage = () => {
-    setIsProductPageOpen(false);
-    setSelectedProduct(null);
-  };
-
   const handleOpenAddProduct = () => {
     console.log('Opening add product page...');
     console.log('App state before:', { isAddProductPageOpen, isAdminOpen });
@@ -646,7 +633,6 @@ const App: React.FC = () => {
           products={products}
           language={language}
           onAddToCart={addToCart}
-          onOpenProduct={handleOpenProduct}
         />
       </main>
 
@@ -718,16 +704,6 @@ const App: React.FC = () => {
         </div>
       )}
         </>
-      )}
-
-      {/* Product Full Page */}
-      {isProductPageOpen && selectedProduct && (
-        <ProductPage
-          product={selectedProduct}
-          language={language}
-          onAddToCart={addToCart}
-          onBack={handleCloseProductPage}
-        />
       )}
     </div>
   );

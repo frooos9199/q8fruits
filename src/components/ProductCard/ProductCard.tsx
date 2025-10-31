@@ -6,14 +6,12 @@ interface ProductCardProps {
   product: Product;
   language: Language;
   onAddToCart: (product: Product, selectedUnit: ProductUnit, quantity: number) => void;
-  onOpenProduct?: (product: Product) => void; // إضافة prop جديد لفتح الصفحة الكاملة
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
   language,
   onAddToCart,
-  onOpenProduct,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState<ProductUnit>(
@@ -81,7 +79,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div className={`product-card ${product.stock === 0 ? 'out-of-stock' : ''}`}>
       {/* Product Images Carousel */}
-      <div className="product-image-container" onClick={() => onOpenProduct && onOpenProduct(product)}>
+      <div className="product-image-container">
         <img
           src={currentImages[selectedImageIndex]}
           alt={product.name[language]}
