@@ -155,7 +155,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     loadUsers();
     loadOrders();
     loadDeliverySettings();
-  }, []);
+    
+    // Set up auto-refresh for orders every 30 seconds
+    const intervalId = setInterval(() => {
+      if (activeTab === 'orders') {
+        console.log('Auto-refreshing orders...');
+        loadOrders();
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(intervalId);
+  }, [activeTab]);
 
   useEffect(() => {
     setFilteredProducts(products);
@@ -196,26 +206,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   // Load orders from localStorage
   const loadOrders = () => {
     const allOrders: Order[] = [];
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     
-    registeredUsers.forEach((user: any) => {
-      const userOrders = JSON.parse(localStorage.getItem(`orders_${user.email}`) || '[]');
-      userOrders.forEach((order: any) => {
-        allOrders.push({
-          ...order,
-          userEmail: user.email,
-          userName: user.name
-        });
-      });
-    });
+    // Get all keys from localStorage that start with "orders_"
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('orders_')) {
+        const userEmail = key.replace('orders_', '');
+        try {
+          const userOrders = JSON.parse(localStorage.getItem(key) || '[]');
+          userOrders.forEach((order: any) => {
+            allOrders.push({
+              ...order,
+              userEmail: userEmail,
+              userName: order.customerInfo?.name || userEmail // Use customer name from order if available
+            });
+          });
+        } catch (error) {
+          console.error(`Error loading orders for ${userEmail}:`, error);
+        }
+      }
+    }
     
     allOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setOrders(allOrders);
     setFilteredOrders(allOrders);
+    console.log(`Loaded ${allOrders.length} orders from localStorage`);
   };
 
   // Refresh orders - to be called when admin panel opens or needs update
   const refreshOrders = () => {
+    console.log('Refreshing orders...');
     loadOrders();
   };
 
@@ -1473,6 +1493,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="admin-header">
           <h1>🛠️ {currentTexts.adminPanel}</h1>
           <div className="admin-header-actions">
+            <button 
+              className="refresh-all-btn"
+              onClick={() => {
+                loadUsers();
+                loadOrders();
+                loadDeliverySettings();
+                console.log('Refreshed all admin data');
+              }}
+              title="تحديث جميع البيانات"
+            >
+              🔄 تحديث
+            </button>
             {onLogout && (
               <button className="logout-btn" onClick={onLogout}>
                 🚪 {currentTexts.logout}
