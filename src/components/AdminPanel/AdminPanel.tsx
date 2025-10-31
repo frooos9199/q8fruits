@@ -385,26 +385,39 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const openViewOrder = (order: Order) => {
     console.log('Opening order view modal...');
     console.log('Order data:', order);
-    console.log('Order items:', order.items);
-    console.log('Order customer info:', order.customerInfo);
     
     if (!order) {
       console.error('No order data provided');
       alert('لا توجد بيانات للطلب');
       return;
     }
+
+    // Validate order data
+    if (!order.orderNumber || !order.items) {
+      console.error('Invalid order data:', order);
+      alert('بيانات الطلب غير صحيحة');
+      return;
+    }
     
-    // Test if modal will open
-    console.log('Setting viewingOrder state...');
+    // Ensure items is an array
+    if (!Array.isArray(order.items)) {
+      console.warn('Order items is not an array, converting...');
+      order.items = [];
+    }
+    
+    // Ensure customer info exists
+    if (!order.customerInfo) {
+      order.customerInfo = {
+        name: order.userName || 'غير محدد',
+        phone: 'غير محدد',
+        address: 'غير محدد',
+        area: 'غير محدد'
+      };
+    }
+    
+    console.log('Validated order data:', order);
     setViewingOrder(order);
-    
-    console.log('Setting showOrderViewModal to true...');
     setShowOrderViewModal(true);
-    
-    // Debug: check if state was set
-    setTimeout(() => {
-      console.log('Modal state after timeout:', { showOrderViewModal, viewingOrder });
-    }, 100);
   };
 
   const closeViewOrder = () => {
@@ -1133,12 +1146,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   </select>
                 </td>
                 <td>
-                  <button 
-                    className="action-btn view"
-                    onClick={() => openViewOrder(order)}
-                  >
-                    عرض الفاتورة
-                  </button>
+                  <div className="action-buttons">
+                    <button 
+                      className="action-btn view"
+                      onClick={() => openViewOrder(order)}
+                      title="عرض الفاتورة"
+                    >
+                      👁️ عرض
+                    </button>
+                    <button 
+                      className="action-btn download"
+                      onClick={() => printOrderInvoice(order)}
+                      title="تحميل الفاتورة"
+                    >
+                      📄 تحميل
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
