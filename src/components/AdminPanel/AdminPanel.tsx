@@ -383,9 +383,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // View order details and invoice
   const openViewOrder = (order: Order) => {
-    console.log('Opening order:', order); // للتصحيح
+    console.log('Opening order view modal...');
+    console.log('Order data:', order);
+    console.log('Order items:', order.items);
+    console.log('Order customer info:', order.customerInfo);
+    
+    if (!order) {
+      console.error('No order data provided');
+      alert('لا توجد بيانات للطلب');
+      return;
+    }
+    
+    // Test if modal will open
+    console.log('Setting viewingOrder state...');
     setViewingOrder(order);
+    
+    console.log('Setting showOrderViewModal to true...');
     setShowOrderViewModal(true);
+    
+    // Debug: check if state was set
+    setTimeout(() => {
+      console.log('Modal state after timeout:', { showOrderViewModal, viewingOrder });
+    }, 100);
   };
 
   const closeViewOrder = () => {
@@ -1789,15 +1808,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {viewingOrder.items && viewingOrder.items.map((item, index) => (
-                          <tr key={index}>
-                            <td>{item.name || 'منتج غير محدد'}</td>
-                            <td>{item.quantity || 0}</td>
-                            <td>{item.unit || 'قطعة'}</td>
-                            <td>{(item.price || 0).toFixed(3)} د.ك</td>
-                            <td>{((item.price || 0) * (item.quantity || 0)).toFixed(3)} د.ك</td>
+                        {viewingOrder.items && Array.isArray(viewingOrder.items) && viewingOrder.items.length > 0 ? 
+                          viewingOrder.items.map((item, index) => (
+                            <tr key={index}>
+                              <td>{item.name || 'منتج غير محدد'}</td>
+                              <td>{item.quantity || 0}</td>
+                              <td>{item.unit || 'قطعة'}</td>
+                              <td>{(item.price || 0).toFixed(3)} د.ك</td>
+                              <td>{((item.price || 0) * (item.quantity || 0)).toFixed(3)} د.ك</td>
+                            </tr>
+                          )) :
+                          <tr>
+                            <td colSpan={5} style={{ textAlign: 'center', padding: '20px' }}>
+                              لا توجد عناصر في هذا الطلب
+                            </td>
                           </tr>
-                        ))}
+                        }
                       </tbody>
                     </table>
                   </div>
