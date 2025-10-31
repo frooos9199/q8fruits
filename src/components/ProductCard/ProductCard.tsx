@@ -6,12 +6,14 @@ interface ProductCardProps {
   product: Product;
   language: Language;
   onAddToCart: (product: Product, selectedUnit: ProductUnit, quantity: number) => void;
+  onOpenProduct?: (product: Product) => void; // إضافة prop جديد لفتح الصفحة الكاملة
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
   language,
   onAddToCart,
+  onOpenProduct,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState<ProductUnit>(
@@ -19,6 +21,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
+
+  // استرجاع الصورة من localStorage إذا كانت محفوظة كـ ID
+  const getImageUrl = (imageId: string) => {
+    if (imageId.startsWith('product_') && imageId.includes('_image_')) {
+      const savedImage = localStorage.getItem(imageId);
+      return savedImage || imageId;
+    }
+    return imageId;
+  };
+
+  const currentImages = product.images.map(img => getImageUrl(img));
 
   const texts = {
     ar: {
@@ -28,7 +41,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
       outOfStock: 'غير متوفر',
       added: 'تم الإضافة!',
       unit: 'الوحدة',
-      selectUnit: 'اختر الوحدة'
+      selectUnit: 'اختر الوحدة',
+      viewFullPage: 'عرض صفحة كاملة'
     },
     en: {
       addToCart: 'Add to Cart',
@@ -37,7 +51,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
       outOfStock: 'Out of Stock',
       added: 'Added!',
       unit: 'Unit',
-      selectUnit: 'Select Unit'
+      selectUnit: 'Select Unit',
+      viewFullPage: 'View Full Page'
     }
   };
 
@@ -66,22 +81,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div className={`product-card ${product.stock === 0 ? 'out-of-stock' : ''}`}>
       {/* Product Images Carousel */}
-      <div className="product-image-container">
+      <div className="product-image-container" onClick={() => onOpenProduct && onOpenProduct(product)}>
         <img
-          src={product.images[selectedImageIndex]}
+          src={currentImages[selectedImageIndex]}
           alt={product.name[language]}
           className="product-image"
           loading="lazy"
         />
         
         {/* Image navigation dots */}
-        {product.images.length > 1 && (
+        {currentImages.length > 1 && (
           <div className="image-dots">
-            {product.images.map((_, index) => (
+            {currentImages.map((_, index) => (
               <button
                 key={index}
                 className={`dot ${index === selectedImageIndex ? 'active' : ''}`}
-                onClick={() => setSelectedImageIndex(index)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImageIndex(index);
+                }}
               />
             ))}
           </div>
@@ -95,6 +113,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <span>{currentTexts.outOfStock}</span>
           </div>
         )}
+        
+        {/* View Full Page overlay */}
+        <div className="view-fullpage-overlay">
+          <span>{currentTexts.viewFullPage}</span>
+        </div>
       </div>
 
       {/* Product Info */}

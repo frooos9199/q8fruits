@@ -8,12 +8,14 @@ interface ProductGridProps {
   products: Product[];
   language: Language;
   onAddToCart: (product: Product, selectedUnit: ProductUnit, quantity: number) => void;
+  onOpenProduct?: (product: Product) => void;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({
   products,
   language,
   onAddToCart,
+  onOpenProduct,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,6 +85,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               product={product}
               language={language}
               onAddToCart={onAddToCart}
+              onOpenProduct={onOpenProduct}
             />
           ))
         )}

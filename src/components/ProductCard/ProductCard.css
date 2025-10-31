@@ -8,9 +8,10 @@
   display: flex;
   flex-direction: column;
   height: auto;
-  min-height: 550px; /* زيادة الارتفاع الأدنى */
+  min-height: 550px;
   border: 1px solid rgba(76, 175, 80, 0.1);
   position: relative;
+  cursor: pointer; /* إضافة cursor pointer للإشارة إلى أنه قابل للنقر */
 }
 
 .product-card:hover {
@@ -40,6 +41,7 @@
   height: 220px;
   overflow: hidden;
   background: linear-gradient(135deg, var(--primary-50) 0%, var(--accent-50) 100%);
+  cursor: pointer;
 }
 
 .product-image {
@@ -91,6 +93,29 @@
   font-size: var(--text-lg);
   z-index: 2;
   backdrop-filter: blur(2px);
+}
+
+/* View Full Page Overlay */
+.view-fullpage-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(76, 175, 80, 0.9), transparent);
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 3;
+}
+
+.product-image-container:hover .view-fullpage-overlay {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .product-info {

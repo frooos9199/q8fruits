@@ -11,6 +11,7 @@ interface AdminPanelProps {
   onDeleteProduct: (id: number) => void;
   onClose: () => void;
   onLogout?: () => void;
+  onOpenAddProduct?: () => void;
 }
 
 interface User {
@@ -49,6 +50,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onDeleteProduct,
   onClose,
   onLogout,
+  onOpenAddProduct,
 }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'orders' | 'products' | 'delivery' | 'inventory' | 'settings'>('dashboard');
   const [activeSubTab, setActiveSubTab] = useState<string>('list');
@@ -1130,7 +1132,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </select>
           <button 
             className="add-product-btn"
-            onClick={() => setShowAddProductModal(true)}
+            onClick={() => {
+              console.log('Add product button clicked', onOpenAddProduct);
+              onOpenAddProduct && onOpenAddProduct();
+            }}
           >
             ➕ إضافة منتج جديد
           </button>

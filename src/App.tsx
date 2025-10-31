@@ -8,6 +8,8 @@ import Login from './components/Login/Login.tsx';
 import Checkout from './components/Checkout/Checkout.tsx';
 import UserProfile from './components/UserProfile/UserProfile.tsx';
 import TestCheckout from './components/TestCheckout/TestCheckout.tsx';
+import ProductPage from './components/ProductPage/ProductPage.tsx';
+import AddProductPage from './components/AddProductPage/AddProductPage.tsx';
 import { Language, Product, CartItem, ProductUnit } from './types';
 
 const App: React.FC = () => {
@@ -25,6 +27,9 @@ const App: React.FC = () => {
   const [userEmail, setUserEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'link' | 'cash'>('cash');
   const [deliveryPrice] = useState(2.000);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isProductPageOpen, setIsProductPageOpen] = useState(false);
+  const [isAddProductPageOpen, setIsAddProductPageOpen] = useState(false);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -66,12 +71,17 @@ const App: React.FC = () => {
       if (savedProducts) {
         const parsedProducts = JSON.parse(savedProducts);
         setProducts(parsedProducts);
+        console.log('Loaded products from localStorage:', parsedProducts.length);
       } else {
         // Save default products to localStorage if not exists
+        setProducts(defaultProducts as Product[]);
         localStorage.setItem('products', JSON.stringify(defaultProducts));
+        console.log('Initialized with default products:', defaultProducts.length);
       }
     } catch (error) {
       console.error('Error loading products from localStorage:', error);
+      // Fallback to default products
+      setProducts(defaultProducts as Product[]);
     }
   }, []); // Empty dependency array to run only once
 
@@ -441,7 +451,7 @@ const App: React.FC = () => {
   ];
 
   // Products state
-  const [products, setProducts] = useState<Product[]>(defaultProducts as Product[]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   const addToCart = (product: Product, selectedUnit: ProductUnit, quantity: number) => {
     const existingItem = cartItems.find(item => 
@@ -457,6 +467,27 @@ const App: React.FC = () => {
     } else {
       setCartItems([...cartItems, { product, selectedUnit, quantity }]);
     }
+  };
+
+  const handleOpenProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductPageOpen(true);
+  };
+
+  const handleCloseProductPage = () => {
+    setIsProductPageOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const handleOpenAddProduct = () => {
+    console.log('Opening add product page...');
+    console.log('App state before:', { isAddProductPageOpen, isAdminOpen });
+    setIsAddProductPageOpen(true);
+    // لا نقفل لوحة الإدارة، بل نخفيها مؤقتاً
+  };
+
+  const handleCloseAddProduct = () => {
+    setIsAddProductPageOpen(false);
   };
 
   const updateCartItem = (productId: number, unitId: number, quantity: number) => {
@@ -489,7 +520,16 @@ const App: React.FC = () => {
       ...productData,
       id: Math.max(...products.map(p => p.id)) + 1
     };
-    setProducts([...products, newProduct]);
+    const updatedProducts = [...products, newProduct];
+    setProducts(updatedProducts);
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('products', JSON.stringify(updatedProducts));
+      console.log('Product saved successfully:', newProduct);
+    } catch (error) {
+      console.error('Error saving product to localStorage:', error);
+    }
   };
 
   const updateProduct = (id: number, productData: Partial<Product>) => {
@@ -576,7 +616,13 @@ const App: React.FC = () => {
 
   return (
     <div className={`App ${language === 'ar' ? 'rtl' : 'ltr'}`}>
-      {isTestMode ? (
+      {isAddProductPageOpen && isLoggedIn && userType === 'admin' ? (
+        <AddProductPage
+          language={language}
+          onAddProduct={addProduct}
+          onBack={handleCloseAddProduct}
+        />
+      ) : isTestMode ? (
         <TestCheckout />
       ) : (
         <>
@@ -600,6 +646,7 @@ const App: React.FC = () => {
           products={products}
           language={language}
           onAddToCart={addToCart}
+          onOpenProduct={handleOpenProduct}
         />
       </main>
 
@@ -623,7 +670,8 @@ const App: React.FC = () => {
         />
       )}
 
-      {isAdminOpen && isLoggedIn && userType === 'admin' && (
+      {/* Admin Panel - Hide when add product page is open */}
+      {isAdminOpen && isLoggedIn && userType === 'admin' && !isAddProductPageOpen && (
         <AdminPanel
           language={language}
           products={products}
@@ -632,6 +680,7 @@ const App: React.FC = () => {
           onDeleteProduct={deleteProduct}
           onClose={() => setIsAdminOpen(false)}
           onLogout={handleLogout}
+          onOpenAddProduct={handleOpenAddProduct}
         />
       )}
 
@@ -669,6 +718,16 @@ const App: React.FC = () => {
         </div>
       )}
         </>
+      )}
+
+      {/* Product Full Page */}
+      {isProductPageOpen && selectedProduct && (
+        <ProductPage
+          product={selectedProduct}
+          language={language}
+          onAddToCart={addToCart}
+          onBack={handleCloseProductPage}
+        />
       )}
     </div>
   );

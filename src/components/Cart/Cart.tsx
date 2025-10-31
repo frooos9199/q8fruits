@@ -23,6 +23,15 @@ const Cart: React.FC<CartProps> = ({
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<'link' | 'cash'>('cash');
 
+  // استرجاع الصورة من localStorage إذا كانت محفوظة كـ ID
+  const getImageUrl = (imageId: string) => {
+    if (imageId.startsWith('product_') && imageId.includes('_image_')) {
+      const savedImage = localStorage.getItem(imageId);
+      return savedImage || imageId;
+    }
+    return imageId;
+  };
+
   const texts = {
     ar: {
       cart: 'السلة',
@@ -107,7 +116,7 @@ const Cart: React.FC<CartProps> = ({
             {items.map((item, index) => (
               <div key={`${item.product.id}-${item.selectedUnit.id}-${index}`} className="cart-item">
                 <div className="item-image">
-                  <img src={item.product.images[0]} alt={item.product.name[language]} />
+                  <img src={getImageUrl(item.product.images[0])} alt={item.product.name[language]} />
                 </div>
                 
                 <div className="item-details">
