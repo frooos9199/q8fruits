@@ -592,6 +592,130 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     return statusMap[status] || status;
   };
 
+  // Share order invoice
+  const shareOrderInvoice = (order: Order) => {
+    const orderSummary = `
+🍎 فكهاني الكويت - فاتورة طلب
+
+📋 رقم الطلب: ${order.orderNumber}
+📅 التاريخ: ${order.date}
+👤 العميل: ${order.customerInfo?.name || order.userName}
+📱 الهاتف: ${order.customerInfo?.phone || 'غير محدد'}
+🏠 العنوان: ${order.customerInfo?.address || 'غير محدد'}
+📍 المنطقة: ${order.customerInfo?.area || 'غير محدد'}
+
+🛒 المنتجات:
+${order.items.map(item => 
+  `• ${item.name} - ${item.quantity} ${item.unit} - ${(item.price * item.quantity).toFixed(3)} د.ك`
+).join('\n')}
+
+💰 المجموع الفرعي: ${(order.total - order.deliveryPrice).toFixed(3)} د.ك
+🚚 رسوم التوصيل: ${order.deliveryPrice.toFixed(3)} د.ك
+💳 المجموع النهائي: ${order.total.toFixed(3)} د.ك
+💳 طريقة الدفع: ${order.paymentMethod}
+📊 الحالة: ${getStatusText(order.status)}
+
+${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}` : ''}
+
+🌟 شكراً لتسوقكم معنا!
+📞 للتواصل: 98899426
+📧 البريد: summit_kw@hotmail.com
+    `.trim();
+
+    // Show sharing options
+    const shareOptions = [
+      {
+        name: 'WhatsApp',
+        action: () => {
+          const phoneNumber = order.customerInfo?.phone?.replace(/\D/g, '') || '';
+          const encodedMessage = encodeURIComponent(orderSummary);
+          const whatsappUrl = phoneNumber 
+            ? `https://wa.me/965${phoneNumber}?text=${encodedMessage}`
+            : `https://wa.me/?text=${encodedMessage}`;
+          window.open(whatsappUrl, '_blank');
+        }
+      },
+      {
+        name: 'Email',
+        action: () => {
+          const subject = encodeURIComponent(`فاتورة طلب ${order.orderNumber} - فكهاني الكويت`);
+          const body = encodeURIComponent(orderSummary);
+          const emailUrl = `mailto:${order.userEmail}?subject=${subject}&body=${body}`;
+          window.location.href = emailUrl;
+        }
+      },
+      {
+        name: 'نسخ النص',
+        action: () => {
+          navigator.clipboard.writeText(orderSummary).then(() => {
+            alert('تم نسخ تفاصيل الفاتورة! يمكنك لصقها في أي مكان.');
+          }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = orderSummary;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('تم نسخ تفاصيل الفاتورة!');
+          });
+        }
+      }
+    ];
+
+    // Show modal with sharing options
+    const shareModal = document.createElement('div');
+    shareModal.className = 'modal-overlay';
+    shareModal.innerHTML = `
+      <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+          <h3>📤 مشاركة الفاتورة</h3>
+        </div>
+        <div class="modal-body">
+          <p>اختر طريقة المشاركة:</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${shareOptions.map((option, index) => `
+              <button class="share-option-btn" data-index="${index}" style="
+                padding: 12px 20px;
+                border: 2px solid #4CAF50;
+                background: white;
+                color: #4CAF50;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s ease;
+              " onmouseover="this.style.background='#4CAF50'; this.style.color='white';" 
+                 onmouseout="this.style.background='white'; this.style.color='#4CAF50';">
+                ${option.name === 'WhatsApp' ? '💬' : option.name === 'Email' ? '📧' : '📋'} ${option.name}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" onclick="this.closest('.modal-overlay').remove()">
+            ❌ إلغاء
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Add event listeners
+    shareModal.addEventListener('click', (e) => {
+      if (e.target === shareModal) {
+        shareModal.remove();
+      }
+      
+      const button = (e.target as HTMLElement).closest('.share-option-btn') as HTMLButtonElement;
+      if (button) {
+        const index = parseInt(button.dataset.index || '0');
+        shareOptions[index].action();
+        shareModal.remove();
+      }
+    });
+
+    document.body.appendChild(shareModal);
+  };
+
   // Product management functions
   const handleEditProduct = (productId: number) => {
     const product = products.find(p => p.id === productId);
@@ -1160,6 +1284,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       title="تحميل الفاتورة"
                     >
                       📄 تحميل
+                    </button>
+                    <button 
+                      className="action-btn share"
+                      onClick={() => shareOrderInvoice(order)}
+                      title="مشاركة الفاتورة"
+                    >
+                      📤 مشاركة
                     </button>
                   </div>
                 </td>
