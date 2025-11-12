@@ -47,6 +47,7 @@ PODS:
     - React-RCTText (= 0.82.1)
     - React-RCTVibration (= 0.82.1)
   - React-callinvoker (0.82.1)
+  - React-Codegen (0.1.0)
   - React-Core (0.82.1):
     - boost
     - DoubleConversion
@@ -1782,93 +1783,29 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - SocketRocket
-  - react-native-safe-area-context (4.8.2):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
+  - react-native-safe-area-context (4.3.1):
     - RCT-Folly
-    - RCT-Folly/Fabric
     - RCTRequired
     - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - react-native-safe-area-context/common (= 4.8.2)
-    - react-native-safe-area-context/fabric (= 4.8.2)
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
+    - React
+    - react-native-safe-area-context/common (= 4.3.1)
+    - react-native-safe-area-context/fabric (= 4.3.1)
     - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
-  - react-native-safe-area-context/common (4.8.2):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
+  - react-native-safe-area-context/common (4.3.1):
     - RCT-Folly
-    - RCT-Folly/Fabric
     - RCTRequired
     - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
+    - React
     - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
-  - react-native-safe-area-context/fabric (4.8.2):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
+  - react-native-safe-area-context/fabric (4.3.1):
     - RCT-Folly
-    - RCT-Folly/Fabric
     - RCTRequired
     - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
+    - React
+    - React-Codegen
     - react-native-safe-area-context/common
-    - React-NativeModulesApple
     - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
   - React-NativeModulesApple (0.82.1):
     - boost
     - DoubleConversion
@@ -2609,6 +2546,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - React-Codegen
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2782,6 +2720,7 @@ SPEC CHECKSUMS:
   RCTTypeSafety: c693294e3993056955c3010eb1ebc574f1fcded6
   React: aeece948ccf155182ea86a2395786ed31cf21c61
   React-callinvoker: 05ad789505922d68c06cde1c8060e734df9fe182
+  React-Codegen: 4b8b4817cea7a54b83851d4c1f91f79aa73de30a
   React-Core: 956ac86b4d9b0c0fd9a14b9cc533aa297bb501c0
   React-CoreModules: 3a8d39778cf9eeca40e419814e875da1a8e29855
   React-cxxreact: db275765e1eb08f038599fb44114cf57ee0d18cd
@@ -2809,7 +2748,7 @@ SPEC CHECKSUMS:
   React-logger: 500f2fa5697d224e63c33d913c8a4765319e19bf
   React-Mapbuffer: 06d59c448da7e34eb05b3fb2189e12f6a30fec57
   React-microtasksnativemodule: d1ee999dc9052e23f6488b730fa2d383a4ea40e5
-  react-native-safe-area-context: bf049de2e336ea2f3e322c099c2466a784f23be5
+  react-native-safe-area-context: f7b43767fabdfe8a415935162b020c3abbe9b538
   React-NativeModulesApple: 46690a0fe94ec28fc6fc686ec797b911d251ded0
   React-oscompat: 95875e81f5d4b3c7b2c888d5bd2c9d83450d8bdb
   React-perflogger: 2e229bf33e42c094fd64516d89ec1187a2b79b5b
