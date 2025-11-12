@@ -1,0 +1,11 @@
+{
+  "github": {
+    "silent": true,
+    "autoJobCancelation": true
+  },
+  "git": {
+    "deploymentEnabled": {
+      "mobile-app": false
+    }
+  }
+}

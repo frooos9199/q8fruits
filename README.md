@@ -1,52 +1,124 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# تطبيق Q8 Fruit Pro - React Native 🍎🥕
 
-# Getting Started
+تطبيق موبايل (iOS و Android) لمتجر Q8 Fruit للفواكه والخضروات.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+> **ملاحظة**: هذا الفرع (`mobile-app`) يحتوي على تطبيق React Native.  
+> لمشروع الويب، راجع الفرع `main`.
 
-## Step 1: Start Metro
+---
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## المميزات ✨
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- ✅ عرض المنتجات مع الصور والأسعار
+- ✅ تصفح حسب الفئات (فواكه، خضار، ورقيات)
+- ✅ سلة تسوق ذكية مع حفظ تلقائي (AsyncStorage)
+- ✅ شاشة تفاصيل المنتج
+- ✅ شاشة دفع مع التحقق من البيانات
+- ✅ تكامل كامل مع API حقيقي
+- ✅ شاشة تأكيد الطلب بعد الشراء
+- ✅ معالجة الأخطاء والحالات الفارغة
 
-```sh
-# Using npm
-npm start
+---
 
-# OR using Yarn
-yarn start
+## المتطلبات 📋
+
+- Node.js >= 18
+- React Native CLI
+- Xcode (للـ iOS)
+- Android Studio (للـ Android)
+
+راجع [دليل إعداد البيئة](https://reactnative.dev/docs/set-up-your-environment) لمزيد من التفاصيل.
+
+---
+
+## التثبيت 🚀
+
+### 1. تثبيت Dependencies
+
+```bash
+npm install
 ```
 
-## Step 2: Build and run your app
+### 2. تثبيت CocoaPods (iOS فقط)
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```bash
+cd ios
+bundle install
+pod install
+cd ..
 ```
+
+---
+
+## التشغيل ▶️
 
 ### iOS
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```bash
+npm run ios
+# أو
+npx react-native run-ios
 ```
 
-Then, and every time you update your native dependencies, run:
+### Android
 
-```sh
-bundle exec pod install
+```bash
+npm run android
+# أو
+npx react-native run-android
 ```
+
+---
+
+## الضبط ⚙️
+
+عدّل ملف `src/config.ts` لضبط عنوان API الخاص بك:
+
+```typescript
+export const API_BASE_URL = 'https://www.q8fruit.com';
+export const ORDERS_PATH = '/api/orders';
+```
+
+---
+
+## هيكل المشروع 📁
+
+```
+src/
+├── config.ts              # إعدادات التطبيق والـ API
+├── services/
+│   └── api.ts            # خدمات الاتصال بالـ API
+├── context/
+│   └── CartContext.tsx   # إدارة حالة السلة (Context API)
+├── components/
+│   └── Button.tsx        # مكونات قابلة لإعادة الاستخدام
+└── screens/
+    ├── HomeScreen.tsx              # الصفحة الرئيسية
+    ├── CategoriesScreen.tsx        # الفئات
+    ├── ProductDetailScreen.tsx     # تفاصيل المنتج
+    ├── CartScreen.tsx              # السلة
+    ├── CheckoutScreen.tsx          # الدفع
+    └── OrderConfirmationScreen.tsx # تأكيد الطلب
+```
+
+---
+
+## API Endpoints
+
+التطبيق يتصل بالـ endpoints التالية:
+
+- `GET /api/products` - جلب المنتجات
+- `GET /api/banners` - جلب البانرات
+- `POST /api/orders` - إنشاء طلب جديد
+
+---
+
+## الفروع 🌿
+
+- **`main`**: تطبيق الويب (React) - منشور على Vercel
+- **`mobile-app`**: تطبيق الموبايل (React Native) - هذا الفرع
+
+---
 
 For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
 
