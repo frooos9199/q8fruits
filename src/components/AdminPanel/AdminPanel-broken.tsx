@@ -1244,12 +1244,12 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
       >
         📦 {currentTexts.inventory}
       </button>
-      </button>
       <button
         className={`tab-btn ${activeTab === 'banner' ? 'active' : ''}`}
         onClick={() => setActiveTab('banner')}
       >
         🖼️ {currentTexts.banner}
+      </button>
       <button
         className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
         onClick={() => setActiveTab('settings')}
@@ -1745,6 +1745,12 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
     <div className="inventory-management">
       <div className="section-header">
         <h2>📦 {currentTexts.inventory}</h2>
+      </button>
+      <button
+        className={`tab-btn ${activeTab === 'banner' ? 'active' : ''}`}
+        onClick={() => setActiveTab('banner')}
+      >
+        🖼️ {currentTexts.banner}
       </div>
 
       <div className="inventory-stats">
@@ -1798,7 +1804,6 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
       </div>
     </div>
   );
-
 
   const renderBannerManagement = () => (
     <div className="banner-management">
@@ -1924,6 +1929,7 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
       </div>
     </div>
   );
+
   const renderSettings = () => (
     <div className="settings-management">
       <div className="section-header">

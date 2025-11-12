@@ -52,7 +52,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onLogout,
   onOpenAddProduct,
 }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'orders' | 'products' | 'delivery' | 'inventory' | 'banner' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'orders' | 'products' | 'delivery' | 'inventory' | 'settings'>('dashboard');
   const [activeSubTab, setActiveSubTab] = useState<string>('list');
 
   // Users state
@@ -1109,7 +1109,6 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
       products: 'إدارة المنتجات',
       delivery: 'إدارة التوصيل',
       inventory: 'إدارة المخزون',
-      banner: 'إدارة البانر',
       settings: 'الإعدادات',
       close: 'إغلاق',
       logout: 'تسجيل خروج',
@@ -1244,12 +1243,6 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
       >
         📦 {currentTexts.inventory}
       </button>
-      </button>
-      <button
-        className={`tab-btn ${activeTab === 'banner' ? 'active' : ''}`}
-        onClick={() => setActiveTab('banner')}
-      >
-        🖼️ {currentTexts.banner}
       <button
         className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
         onClick={() => setActiveTab('settings')}
@@ -1799,131 +1792,6 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
     </div>
   );
 
-
-  const renderBannerManagement = () => (
-    <div className="banner-management">
-      <div className="section-header">
-        <h2>🖼️ إدارة البانر</h2>
-        <p style={{ color: '#7f8c8d', marginTop: '10px' }}>إدارة صور البانر المتحرك في الصفحة الرئيسية</p>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginBottom: '40px', marginTop: '30px' }}>
-        {/* Banner 1 */}
-        <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <div style={{ width: '100%', height: '200px', overflow: 'hidden', background: '#f5f5f5' }}>
-            <img 
-              src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800&h=400&fit=crop" 
-              alt="Banner 1"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-          <div style={{ padding: '15px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', color: '#2c3e50' }}>البانر الأول</h3>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button style={{ flex: 1, padding: '8px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', background: '#3498db', color: 'white' }}>
-                ✏️ تعديل الصورة
-              </button>
-              <button style={{ flex: 1, padding: '8px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', background: '#e74c3c', color: 'white' }}>
-                🗑️ حذف
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Banner 2 */}
-        <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <div style={{ width: '100%', height: '200px', overflow: 'hidden', background: '#f5f5f5' }}>
-            <img 
-              src="https://images.unsplash.com/photo-1464454709131-ffd692591ee5?w=800&h=400&fit=crop" 
-              alt="Banner 2"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-          <div style={{ padding: '15px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', color: '#2c3e50' }}>البانر الثاني</h3>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button style={{ flex: 1, padding: '8px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', background: '#3498db', color: 'white' }}>
-                ✏️ تعديل الصورة
-              </button>
-              <button style={{ flex: 1, padding: '8px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', background: '#e74c3c', color: 'white' }}>
-                🗑️ حذف
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Banner 3 */}
-        <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <div style={{ width: '100%', height: '200px', overflow: 'hidden', background: '#f5f5f5' }}>
-            <img 
-              src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&h=400&fit=crop" 
-              alt="Banner 3"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-          <div style={{ padding: '15px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', color: '#2c3e50' }}>البانر الثالث</h3>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button style={{ flex: 1, padding: '8px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', background: '#3498db', color: 'white' }}>
-                ✏️ تعديل الصورة
-              </button>
-              <button style={{ flex: 1, padding: '8px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', background: '#e74c3c', color: 'white' }}>
-                🗑️ حذف
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Add New Banner Card */}
-        <div style={{ border: '2px dashed #bdc3c7', background: '#f8f9fa', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: '300px' }}>
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '48px', color: '#bdc3c7', marginBottom: '15px' }}>➕</div>
-            <h3 style={{ color: '#7f8c8d', marginBottom: '10px' }}>إضافة بانر جديد</h3>
-            <p style={{ color: '#95a5a6', fontSize: '14px', marginBottom: '15px' }}>انقر لرفع صورة جديدة</p>
-            <input 
-              type="file" 
-              accept="image/*" 
-              style={{ display: 'none' }} 
-              id="banner-upload"
-            />
-            <label htmlFor="banner-upload" style={{ display: 'inline-block', padding: '10px 20px', background: '#3498db', color: 'white', borderRadius: '6px', cursor: 'pointer' }}>
-              📤 اختر صورة
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ background: 'white', padding: '25px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        <h3 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#2c3e50' }}>⚙️ إعدادات البانر</h3>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', color: '#34495e', fontWeight: '500' }}>
-            <input type="checkbox" defaultChecked style={{ marginLeft: '10px', width: '18px', height: '18px' }} />
-            تفعيل التبديل التلقائي
-          </label>
-        </div>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#34495e', fontWeight: '500' }}>مدة عرض كل صورة (بالثواني):</label>
-          <input type="number" defaultValue="3.5" min="1" max="10" step="0.5" style={{ width: '100%', maxWidth: '300px', padding: '10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px' }} />
-        </div>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#34495e', fontWeight: '500' }}>نوع الانتقال:</label>
-          <select style={{ width: '100%', maxWidth: '300px', padding: '10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px' }}>
-            <option value="fade">تلاشي</option>
-            <option value="slide">انزلاق</option>
-            <option value="zoom">تكبير</option>
-          </select>
-        </div>
-        <div style={{ marginBottom: '20px' }}>
-          <button 
-            onClick={() => alert('تم حفظ إعدادات البانر بنجاح!')}
-            style={{ padding: '12px 30px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '600', cursor: 'pointer' }}
-          >
-            💾 حفظ الإعدادات
-          </button>
-        </div>
-      </div>
-    </div>
-  );
   const renderSettings = () => (
     <div className="settings-management">
       <div className="section-header">
@@ -2015,7 +1883,6 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
           {activeTab === 'products' && renderProductsManagement()}
           {activeTab === 'delivery' && renderDeliveryManagement()}
           {activeTab === 'inventory' && renderInventoryManagement()}
-          {activeTab === 'banner' && renderBannerManagement()}
           {activeTab === 'settings' && renderSettings()}
         </div>
 
