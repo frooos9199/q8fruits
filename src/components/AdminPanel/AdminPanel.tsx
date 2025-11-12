@@ -1160,6 +1160,7 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
       products: 'Product Management',
       delivery: 'Delivery Management',
       inventory: 'Inventory Management',
+      banner: 'Banner Management',
       settings: 'Settings',
       close: 'Close',
       logout: 'Logout',
@@ -1244,12 +1245,12 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
       >
         📦 {currentTexts.inventory}
       </button>
-      </button>
       <button
         className={`tab-btn ${activeTab === 'banner' ? 'active' : ''}`}
         onClick={() => setActiveTab('banner')}
       >
         🖼️ {currentTexts.banner}
+      </button>
       <button
         className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
         onClick={() => setActiveTab('settings')}
