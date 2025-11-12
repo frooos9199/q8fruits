@@ -263,6 +263,42 @@ const Checkout: React.FC<CheckoutProps> = ({
     }
   };
 
+  // Function to save order to shared server API
+  const saveOrderToServer = async (orderData: any) => {
+    try {
+      console.log('🌐 Saving order to server API...');
+      
+      const response = await fetch('/api/products.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'addOrder',
+          order: orderData
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          console.log('✅ Order saved to server successfully');
+          return result;
+        } else {
+          throw new Error(result.error || 'Server returned success: false');
+        }
+      } else {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('❌ Failed to save order to server:', error);
+      
+      // لا نرمي خطأ هنا، بل نحفظ في localStorage كنسخة احتياطية
+      console.log('💾 Falling back to localStorage save...');
+      throw error; // إعادة رمي الخطأ للمعالجة في handleSubmit
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -289,10 +325,26 @@ const Checkout: React.FC<CheckoutProps> = ({
         // Continue processing even if user data update fails
       }
 
-      // Create order data for saving to history
+      // Create order data for saving
+      const userEmail = localStorage.getItem('userEmail') || customerInfo.email;
       const orderData = {
+        id: Date.now().toString(),
         orderNumber: newOrderNumber,
-        date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+        userEmail: userEmail,
+        userName: customerInfo.name,
+        date: new Date().toISOString(),
+        items: items.map((item: any) => ({
+          productId: item.product.id,
+          productName: item.product.name,
+          quantity: item.quantity,
+          price: item.selectedUnit.price,
+          unit: item.selectedUnit.unit,
+          total: item.quantity * item.selectedUnit.price
+        })),
+        total,
+        status: 'pending' as const,
+        paymentMethod,
+        deliveryPrice,
         customerInfo: {
           name: customerInfo.name,
           phone: customerInfo.phone,
@@ -301,19 +353,40 @@ const Checkout: React.FC<CheckoutProps> = ({
           notes: customerInfo.notes,
           email: customerInfo.email,
         },
-        items,
-        subtotal,
-        deliveryPrice,
-        total,
-        paymentMethod,
+        notes: customerInfo.notes
       };
 
-      // Save order to user's history
+      // Try to save order to server first
       try {
-        saveOrderToHistory(orderData);
-        console.log('Saved order to history successfully');
+        await saveOrderToServer(orderData);
+        console.log('✅ Order saved to server successfully');
+      } catch (serverError) {
+        console.warn('⚠️ Server save failed, using localStorage fallback:', serverError);
+        // Continue with localStorage save as fallback
+      }
+
+      // Save order to user's history (localStorage)
+      try {
+        saveOrderToHistory({
+          orderNumber: newOrderNumber,
+          date: new Date().toLocaleDateString(language === 'ar' ? 'ar-KW' : 'en-US'),
+          customerInfo: {
+            name: customerInfo.name,
+            phone: customerInfo.phone,
+            address: customerInfo.address,
+            area: customerInfo.area,
+            notes: customerInfo.notes,
+            email: customerInfo.email,
+          },
+          items,
+          subtotal,
+          deliveryPrice,
+          total,
+          paymentMethod,
+        });
+        console.log('✅ Order saved to localStorage history successfully');
       } catch (historyError) {
-        console.warn('Failed to save order history:', historyError);
+        console.warn('⚠️ Failed to save order history:', historyError);
         // Continue processing even if history save fails
       }
 

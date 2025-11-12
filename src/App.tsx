@@ -5,6 +5,7 @@ import ProductGrid from './components/ProductGrid/ProductGrid.tsx';
 import Cart from './components/Cart/Cart.tsx';
 import AdminPanel from './components/AdminPanel/AdminPanel.tsx';
 import Login from './components/Login/Login.tsx';
+import MobileBanner from './components/MobileBanner/MobileBanner.tsx';
 import Checkout from './components/Checkout/Checkout.tsx';
 import UserProfile from './components/UserProfile/UserProfile.tsx';
 import TestCheckout from './components/TestCheckout/TestCheckout.tsx';
@@ -27,6 +28,7 @@ const App: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'link' | 'cash'>('cash');
   const [deliveryPrice] = useState(2.000);
   const [isAddProductPageOpen, setIsAddProductPageOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Check if user is already logged in
   useEffect(() => {
@@ -61,25 +63,62 @@ const App: React.FC = () => {
     }
   }, [cartItems]);
 
-  // Load products from localStorage if available
+  // Load products from server or localStorage
   useEffect(() => {
-    try {
-      const savedProducts = localStorage.getItem('products');
-      if (savedProducts) {
-        const parsedProducts = JSON.parse(savedProducts);
-        setProducts(parsedProducts);
-        console.log('Loaded products from localStorage:', parsedProducts.length);
-      } else {
-        // Save default products to localStorage if not exists
-        setProducts(defaultProducts as Product[]);
-        localStorage.setItem('products', JSON.stringify(defaultProducts));
-        console.log('Initialized with default products:', defaultProducts.length);
+    const loadProducts = async () => {
+      console.log('🔄 Loading products...');
+      
+      try {
+        // محاولة تحميل من الخادم أولاً
+        console.log('🌐 Attempting to load from server API...');
+        const response = await fetch('/api/products.php');
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Server response:', result);
+          
+          if (result.success && result.products) {
+            setProducts(result.products);
+            console.log('✅ Loaded products from server:', result.products.length);
+            
+            // حفظ نسخة احتياطية في localStorage
+            try {
+              localStorage.setItem('products', JSON.stringify(result.products));
+              console.log('💾 Backup saved to localStorage');
+            } catch (storageError) {
+              console.warn('⚠️ localStorage backup failed (non-critical):', storageError);
+            }
+            return;
+          }
+        } else {
+          console.warn('⚠️ Server response not ok:', response.status, response.statusText);
+        }
+      } catch (serverError) {
+        console.warn('⚠️ Server load failed:', serverError);
       }
-    } catch (error) {
-      console.error('Error loading products from localStorage:', error);
-      // Fallback to default products
+      
+      // إذا فشل التحميل من الخادم، تحميل من localStorage
+      console.log('🔄 Falling back to localStorage...');
+      try {
+        const savedProducts = localStorage.getItem('products');
+        if (savedProducts) {
+          const parsedProducts = JSON.parse(savedProducts);
+          setProducts(parsedProducts);
+          console.log('✅ Loaded products from localStorage:', parsedProducts.length);
+          return;
+        }
+      } catch (localError) {
+        console.error('❌ Error loading from localStorage:', localError);
+      }
+      
+      // إذا فشل كلاهما، استخدام البيانات الافتراضية
+      console.log('🔄 Using default products...');
       setProducts(defaultProducts as Product[]);
-    }
+      localStorage.setItem('products', JSON.stringify(defaultProducts));
+      console.log('✅ Initialized with default products:', defaultProducts.length);
+    };
+    
+    loadProducts();
   }, []); // Empty dependency array to run only once
 
   // Sample products data - moved to separate variable
@@ -502,20 +541,132 @@ const App: React.FC = () => {
   };
 
   // Product management functions
-  const addProduct = (productData: Omit<Product, 'id'>) => {
-    const newProduct: Product = {
-      ...productData,
-      id: Math.max(...products.map(p => p.id)) + 1
-    };
-    const updatedProducts = [...products, newProduct];
-    setProducts(updatedProducts);
+  const addProduct = async (productData: Omit<Product, 'id'>): Promise<void> => {
+    console.log('🎯 addProduct function called in App.tsx');
+    console.log('📦 Received product data:', productData);
+    console.log('📊 Current products count:', products.length);
     
-    // Save to localStorage
     try {
-      localStorage.setItem('products', JSON.stringify(updatedProducts));
-      console.log('Product saved successfully:', newProduct);
+      // التحقق من صحة البيانات المستلمة
+      if (!productData) {
+        throw new Error('Product data is null or undefined');
+      }
+      
+      if (!productData.name || !productData.name.ar || !productData.name.en) {
+        throw new Error(`Invalid product name: ${JSON.stringify(productData.name)}`);
+      }
+      
+      if (!productData.units || !Array.isArray(productData.units) || productData.units.length === 0) {
+        throw new Error(`Invalid product units: ${JSON.stringify(productData.units)}`);
+      }
+      
+      const hasDefaultUnit = productData.units.some(unit => unit.isDefault);
+      if (!hasDefaultUnit) {
+        throw new Error('No default unit specified in product data');
+      }
+      
+      console.log('✅ Product data validation passed');
+      
+      // إرسال المنتج إلى API الخاص بالخادم
+      console.log('🌐 Sending product to server API...');
+      
+      const response = await fetch('/api/products.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData)
+      });
+      
+      console.log('📡 Server response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Server error response:', errorText);
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ Server response:', result);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Server returned success: false');
+      }
+      
+      // إضافة المنتج الجديد للحالة المحلية
+      const newProduct = result.product;
+      console.log('🆕 New product from server:', newProduct);
+      
+      const updatedProducts = [...products, newProduct];
+      console.log('📈 Updated products count:', updatedProducts.length);
+      
+      // تحديث الحالة المحلية
+      console.log('🔄 Updating React state...');
+      setProducts(updatedProducts);
+      console.log('✅ React state updated successfully');
+      
+      // أيضاً حفظ نسخة احتياطية في localStorage
+      try {
+        const dataToSave = JSON.stringify(updatedProducts);
+        localStorage.setItem('products', dataToSave);
+        console.log('💾 Backup saved to localStorage');
+      } catch (storageError) {
+        console.warn('⚠️ localStorage backup failed (non-critical):', storageError);
+      }
+      
+      // تنزيل ملف products.json المحدث
+      setTimeout(() => {
+        try {
+          console.log('📥 Starting auto-download of updated products.json...');
+          const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(updatedProducts, null, 2));
+          
+          const exportFileDefaultName = 'products.json';
+          const linkElement = document.createElement('a');
+          linkElement.setAttribute('href', dataUri);
+          linkElement.setAttribute('download', exportFileDefaultName);
+          linkElement.style.display = 'none';
+          document.body.appendChild(linkElement);
+          linkElement.click();
+          document.body.removeChild(linkElement);
+          
+          console.log('📥 Updated products.json downloaded successfully');
+        } catch (downloadError) {
+          console.error('📥 Download error (non-critical):', downloadError);
+          // لا نرمي خطأ هنا لأن التنزيل اختياري
+        }
+      }, 1000);
+      
+      console.log('🎉 Product added successfully to server and local state!');
+      
     } catch (error) {
-      console.error('Error saving product to localStorage:', error);
+      console.error('❌ CRITICAL ERROR in addProduct function:');
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      console.error('Error message:', error instanceof Error ? error.message : error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('Current products array:', products);
+      console.error('Received product data:', productData);
+      
+      // في حالة فشل API، محاولة الحفظ المحلي كنسخة احتياطية
+      if (error instanceof Error && (error.message.includes('fetch') || error.message.includes('Server error'))) {
+        console.log('🔄 API failed, attempting localStorage fallback...');
+        try {
+          const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+          const newProduct: Product = { ...productData, id: newId };
+          const updatedProducts = [...products, newProduct];
+          
+          localStorage.setItem('products', JSON.stringify(updatedProducts));
+          setProducts(updatedProducts);
+          
+          console.log('✅ Fallback save to localStorage successful');
+          console.warn('⚠️ Product saved locally only - will sync when server is available');
+          return;
+        } catch (fallbackError) {
+          console.error('❌ Fallback save also failed:', fallbackError);
+        }
+      }
+      
+      throw error; // إعادة رمي الخطأ ليتم التعامل معه في AddProductPage
     }
   };
 
@@ -626,13 +777,17 @@ const App: React.FC = () => {
         userEmail={userEmail}
         onLogout={handleLogout}
         onProfileClick={() => setIsProfileOpen(true)}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
       />
       
       <main className="main-content">
+        <MobileBanner />
         <ProductGrid 
           products={products}
           language={language}
           onAddToCart={addToCart}
+            searchTerm={searchTerm}
         />
       </main>
 

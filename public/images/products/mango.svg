@@ -1,0 +1,38 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="mangoGradient" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" style="stop-color:#ff9800;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ff5722;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e65100;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Mango Body -->
+  <ellipse cx="150" cy="160" rx="65" ry="85" fill="url(#mangoGradient)" />
+  
+  <!-- Mango Shape Details -->
+  <path d="M110 120 Q130 100 150 110 Q170 100 190 120 Q180 140 150 160 Q120 140 110 120" 
+        fill="url(#mangoGradient)" />
+  
+  <!-- Mango Highlights -->
+  <ellipse cx="130" cy="130" rx="15" ry="20" fill="#ffb74d" opacity="0.7" />
+  <ellipse cx="160" cy="140" rx="10" ry="15" fill="#ffb74d" opacity="0.5" />
+  
+  <!-- Mango Texture -->
+  <path d="M125 150 Q135 155 145 150" stroke="#ff7043" stroke-width="2" fill="none" opacity="0.6" />
+  <path d="M155 160 Q165 165 175 160" stroke="#ff7043" stroke-width="2" fill="none" opacity="0.6" />
+  <path d="M130 180 Q140 185 150 180" stroke="#ff7043" stroke-width="2" fill="none" opacity="0.6" />
+  
+  <!-- Mango Leaf -->
+  <ellipse cx="155" cy="85" rx="8" ry="20" fill="#4caf50" transform="rotate(15 155 85)" />
+  <ellipse cx="145" cy="88" rx="6" ry="15" fill="#4caf50" transform="rotate(-10 145 88)" />
+  
+  <!-- Mango Stem -->
+  <rect x="148" y="80" width="4" height="15" fill="#8b4513" />
+  
+  <!-- Shadow -->
+  <ellipse cx="150" cy="250" rx="50" ry="12" fill="#000" opacity="0.2" />
+  
+  <!-- Text -->
+  <text x="150" y="280" text-anchor="middle" fill="#333" font-family="Arial" font-size="16" font-weight="bold">مانجو استوائي</text>
+</svg>

@@ -1,0 +1,164 @@
+/* Mobile-First Header Styles - نسخة محسنة للموبايل */
+
+@media (max-width: 768px) {
+  .header {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .header-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    max-width: 100%;
+  }
+
+  /* Logo Section - على اليسار */
+  .header-brand {
+    flex: 0 0 auto;
+    min-width: auto;
+    order: 1;
+  }
+
+  .logo-container {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .header-logo {
+    height: 45px;
+    width: 45px;
+    border: 2px solid #d1fae5;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+  }
+
+  .header-title,
+  .fallback-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  /* إخفاء Subtitle والهاتف في الموبايل */
+  .header-subtitle,
+  .header-phone {
+    display: none;
+  }
+
+  /* Navigation - على اليمين */
+  .header-nav {
+    flex: 0 0 auto;
+    order: 2;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* Buttons أصغر وأخف */
+  .language-toggle,
+  .cart-button,
+  .admin-button,
+  .user-button,
+  .login-button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    min-height: 38px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-width: 1px;
+  }
+
+  /* Cart Button */
+  .cart-button {
+    padding: 8px 14px;
+  }
+
+  .cart-icon {
+    font-size: 1.1rem;
+  }
+
+  .cart-text {
+    font-size: 0.85rem;
+  }
+
+  .cart-count {
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    top: -6px;
+    right: -6px;
+  }
+
+  /* User/Login Buttons */
+  .user-button,
+  .login-button {
+    padding: 8px 12px;
+  }
+
+  .user-icon,
+  .login-icon {
+    font-size: 1.1rem;
+  }
+
+  /* إظهار اسم المستخدم في الموبايل */
+  .user-name {
+    display: inline;
+    max-width: 70px;
+    font-size: 0.8rem;
+  }
+
+  .dropdown-arrow {
+    font-size: 0.75rem;
+  }
+
+  .login-text {
+    display: inline;
+    font-size: 0.85rem;
+  }
+
+  /* Language Toggle */
+  .language-toggle {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* للشاشات الصغيرة جداً */
+@media (max-width: 380px) {
+  .header-container {
+    padding: 0 12px;
+  }
+
+  .header-logo {
+    height: 40px;
+    width: 40px;
+  }
+
+  .header-title,
+  .fallback-title {
+    font-size: 1rem;
+  }
+
+  .language-toggle,
+  .cart-button,
+  .user-button,
+  .login-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+
+  .cart-text,
+  .login-text {
+    display: none;
+  }
+
+  .user-name {
+    max-width: 50px;
+  }
+}

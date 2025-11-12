@@ -1,7 +1,8 @@
 {
-  "name": "fakahani-kuwait",
-  "version": "1.0.0",
-  "description": "فكهاني الكويت - موقع لبيع الفواكه والخضار",
+  "name": "q8fruit",
+  "version": "2.0.0",
+  "description": "Q8 Fruit - Professional Kuwaiti Fruits E-commerce Platform",
+  "homepage": "https://www.q8fruit.com",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",

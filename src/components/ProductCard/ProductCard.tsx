@@ -20,11 +20,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
 
-  // استرجاع الصورة من localStorage إذا كانت محفوظة كـ ID
+  // معالجة الصور المحلية والمحفوظة
   const getImageUrl = (imageId: string) => {
+    // إذا كانت الصورة تبدأ بـ / فهي صورة محلية
+    if (imageId.startsWith('/')) {
+      return imageId;
+    }
+    // إذا كانت محفوظة في localStorage كـ ID
     if (imageId.startsWith('product_') && imageId.includes('_image_')) {
       const savedImage = localStorage.getItem(imageId);
-      return savedImage || imageId;
+      return savedImage || '/images/products/apple.svg'; // صورة افتراضية
+    }
+    // إذا كانت إيموجي أو نص، استخدم صورة افتراضية
+    if (imageId.length <= 4) {
+      return '/images/products/apple.svg';
     }
     return imageId;
   };

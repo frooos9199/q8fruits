@@ -1,0 +1,34 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bananaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffeb3b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffc107;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Banana Bunch -->
+  <path d="M120 80 Q130 100 140 120 Q150 140 145 160 Q140 180 135 200 Q130 220 140 240" 
+        stroke="url(#bananaGradient)" stroke-width="25" fill="none" stroke-linecap="round" />
+  <path d="M130 85 Q140 105 150 125 Q160 145 155 165 Q150 185 145 205 Q140 225 150 245" 
+        stroke="url(#bananaGradient)" stroke-width="25" fill="none" stroke-linecap="round" />
+  <path d="M140 90 Q150 110 160 130 Q170 150 165 170 Q160 190 155 210 Q150 230 160 250" 
+        stroke="url(#bananaGradient)" stroke-width="25" fill="none" stroke-linecap="round" />
+  <path d="M150 95 Q160 115 170 135 Q180 155 175 175 Q170 195 165 215 Q160 235 170 255" 
+        stroke="url(#bananaGradient)" stroke-width="25" fill="none" stroke-linecap="round" />
+  
+  <!-- Banana Tips -->
+  <circle cx="140" cy="240" r="6" fill="#8bc34a" />
+  <circle cx="150" cy="245" r="6" fill="#8bc34a" />
+  <circle cx="160" cy="250" r="6" fill="#8bc34a" />
+  <circle cx="170" cy="255" r="6" fill="#8bc34a" />
+  
+  <!-- Banana Highlights -->
+  <path d="M125 85 Q132 100 135 120" stroke="#fff59d" stroke-width="3" fill="none" opacity="0.8" />
+  <path d="M135 90 Q142 105 145 125" stroke="#fff59d" stroke-width="3" fill="none" opacity="0.8" />
+  
+  <!-- Shadow -->
+  <ellipse cx="150" cy="270" rx="50" ry="10" fill="#000" opacity="0.2" />
+  
+  <!-- Text -->
+  <text x="150" y="290" text-anchor="middle" fill="#333" font-family="Arial" font-size="16" font-weight="bold">موز أصفر</text>
+</svg>

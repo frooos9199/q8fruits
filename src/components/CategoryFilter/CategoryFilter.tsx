@@ -18,7 +18,6 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
     { key: 'fruits', ar: 'فواكه', en: 'Fruits', emoji: '🍎' },
     { key: 'vegetables', ar: 'خضار', en: 'Vegetables', emoji: '🥕' },
     { key: 'leafy', ar: 'ورقيات', en: 'Leafy Greens', emoji: '🥬' },
-    { key: 'baskets', ar: 'سلات', en: 'Baskets', emoji: '🧺' },
   ];
 
   return (

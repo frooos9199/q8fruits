@@ -1,0 +1,29 @@
+{
+  "name": "q8fruit-api-server",
+  "version": "1.0.0",
+  "description": "API server for Q8 Fruit mobile app",
+  "main": "api-server.js",
+  "scripts": {
+    "start": "node api-server.js",
+    "dev": "nodemon api-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "api",
+    "mobile",
+    "fruits",
+    "kuwait",
+    "q8fruit"
+  ],
+  "author": "Q8 Fruit",
+  "license": "MIT"
+}

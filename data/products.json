@@ -1,0 +1,420 @@
+[
+  {
+    "id": 1,
+    "name": {
+      "ar": "تفاح أحمر",
+      "en": "Red Apple"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "كيلو",
+          "en": "kg"
+        },
+        "price": 2.5,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/apple.svg",
+    "images": [
+      "/images/products/apple.svg"
+    ],
+    "tags": [
+      "طازج",
+      "عضوي"
+    ],
+    "description": {
+      "ar": "تفاح أحمر طازج من مزارع الكويت",
+      "en": "Fresh red apple from Kuwait farms"
+    },
+    "isPublished": true,
+    "stock": 100,
+    "minStock": 10,
+    "barcode": "8901234567890",
+    "supplier": "مزرعة الكويت",
+    "origin": {
+      "ar": "الكويت",
+      "en": "Kuwait"
+    },
+    "nutritionFacts": {
+      "calories": "52",
+      "protein": "0.3g",
+      "carbs": "14g",
+      "fat": "0.2g",
+      "fiber": "2.4g",
+      "vitamins": "فيتامين C"
+    },
+    "storageInstructions": {
+      "ar": "يحفظ في الثلاجة",
+      "en": "Store in refrigerator"
+    }
+  },
+  {
+    "id": 2,
+    "name": {
+      "ar": "موز",
+      "en": "Banana"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "كيلو",
+          "en": "kg"
+        },
+        "price": 1.8,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/banana.svg",
+    "images": [
+      "/images/products/banana.svg"
+    ],
+    "tags": [
+      "طازج",
+      "مصدر الطاقة"
+    ],
+    "description": {
+      "ar": "موز طازج حلو المذاق، مصدر ممتاز للبوتاسيوم والطاقة",
+      "en": "Fresh sweet banana, excellent source of potassium and energy"
+    },
+    "isPublished": true,
+    "stock": 150,
+    "minStock": 15,
+    "barcode": "8901234567891",
+    "supplier": "مزارع الفلبين",
+    "origin": {
+      "ar": "الفلبين",
+      "en": "Philippines"
+    },
+    "nutritionFacts": {
+      "calories": "89",
+      "protein": "1.1g",
+      "carbs": "23g",
+      "fat": "0.3g",
+      "fiber": "2.6g",
+      "vitamins": "فيتامين B6"
+    },
+    "storageInstructions": {
+      "ar": "في درجة حرارة الغرفة",
+      "en": "Store at room temperature"
+    }
+  },
+  {
+    "id": 3,
+    "name": {
+      "ar": "برتقال",
+      "en": "Orange"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "كيلو",
+          "en": "kg"
+        },
+        "price": 2.2,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/orange.svg",
+    "images": [
+      "/images/products/orange.svg"
+    ],
+    "tags": [
+      "طازج",
+      "غني بفيتامين C"
+    ],
+    "description": {
+      "ar": "برتقال طازج مليء بفيتامين C ومضادات الأكسدة",
+      "en": "Fresh orange full of vitamin C and antioxidants"
+    },
+    "isPublished": true,
+    "stock": 120,
+    "minStock": 12,
+    "barcode": "8901234567892",
+    "supplier": "مزارع مصر",
+    "origin": {
+      "ar": "مصر",
+      "en": "Egypt"
+    },
+    "nutritionFacts": {
+      "calories": "47",
+      "protein": "0.9g",
+      "carbs": "12g",
+      "fat": "0.1g",
+      "fiber": "2.4g",
+      "vitamins": "فيتامين C"
+    },
+    "storageInstructions": {
+      "ar": "في الثلاجة",
+      "en": "Store in refrigerator"
+    }
+  },
+  {
+    "id": 4,
+    "name": {
+      "ar": "فراولة",
+      "en": "Strawberry"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "كيلو",
+          "en": "kg"
+        },
+        "price": 4.5,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/strawberry.svg",
+    "images": [
+      "/images/products/strawberry.svg"
+    ],
+    "tags": [
+      "طازج",
+      "عضوي",
+      "غني بفيتامين C"
+    ],
+    "description": {
+      "ar": "فراولة طازجة حلوة المذاق، غنية بالفيتامينات ومضادات الأكسدة",
+      "en": "Fresh sweet strawberry, rich in vitamins and antioxidants"
+    },
+    "isPublished": true,
+    "stock": 80,
+    "minStock": 8,
+    "barcode": "8901234567893",
+    "supplier": "مزارع تركيا",
+    "origin": {
+      "ar": "تركيا",
+      "en": "Turkey"
+    },
+    "nutritionFacts": {
+      "calories": "32",
+      "protein": "0.7g",
+      "carbs": "7.7g",
+      "fat": "0.3g",
+      "fiber": "2.0g",
+      "vitamins": "فيتامين C"
+    },
+    "storageInstructions": {
+      "ar": "في الثلاجة",
+      "en": "Store in refrigerator"
+    }
+  },
+  {
+    "id": 5,
+    "name": {
+      "ar": "عنب أحمر",
+      "en": "Red Grapes"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "كيلو",
+          "en": "kg"
+        },
+        "price": 3.2,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/grapes.svg",
+    "images": [
+      "/images/products/grapes.svg"
+    ],
+    "tags": [
+      "طازج",
+      "مضاد للأكسدة"
+    ],
+    "description": {
+      "ar": "عنب أحمر حلو بدون بذور، مليء بمضادات الأكسدة",
+      "en": "Sweet red seedless grapes, full of antioxidants"
+    },
+    "isPublished": true,
+    "stock": 90,
+    "minStock": 9,
+    "barcode": "8901234567894",
+    "supplier": "مزارع إيطاليا",
+    "origin": {
+      "ar": "إيطاليا",
+      "en": "Italy"
+    },
+    "nutritionFacts": {
+      "calories": "62",
+      "protein": "0.6g",
+      "carbs": "16g",
+      "fat": "0.2g",
+      "fiber": "0.9g",
+      "vitamins": "فيتامين K"
+    },
+    "storageInstructions": {
+      "ar": "في الثلاجة",
+      "en": "Store in refrigerator"
+    }
+  },
+  {
+    "id": 6,
+    "name": {
+      "ar": "كيوي",
+      "en": "Kiwi"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "كيلو",
+          "en": "kg"
+        },
+        "price": 3.8,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/kiwi.svg",
+    "images": [
+      "/images/products/kiwi.svg"
+    ],
+    "tags": [
+      "طازج",
+      "عضوي",
+      "غني بفيتامين C"
+    ],
+    "description": {
+      "ar": "كيوي طازج غني بفيتامين C والألياف",
+      "en": "Fresh kiwi rich in vitamin C and fiber"
+    },
+    "isPublished": true,
+    "stock": 70,
+    "minStock": 7,
+    "barcode": "8901234567895",
+    "supplier": "مزارع نيوزيلندا",
+    "origin": {
+      "ar": "نيوزيلندا",
+      "en": "New Zealand"
+    },
+    "nutritionFacts": {
+      "calories": "61",
+      "protein": "1.1g",
+      "carbs": "15g",
+      "fat": "0.5g",
+      "fiber": "3.0g",
+      "vitamins": "فيتامين C"
+    },
+    "storageInstructions": {
+      "ar": "في درجة حرارة الغرفة حتى النضج، ثم في الثلاجة",
+      "en": "Room temperature until ripe, then refrigerate"
+    }
+  },
+  {
+    "id": 7,
+    "name": {
+      "ar": "مانجو",
+      "en": "Mango"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "كيلو",
+          "en": "kg"
+        },
+        "price": 4.2,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/mango.svg",
+    "images": [
+      "/images/products/mango.svg"
+    ],
+    "tags": [
+      "طازج",
+      "غني بفيتامين A"
+    ],
+    "description": {
+      "ar": "مانجو استوائية حلوة وعصيرية، غنية بالفيتامينات",
+      "en": "Sweet and juicy tropical mango, rich in vitamins"
+    },
+    "isPublished": true,
+    "stock": 60,
+    "minStock": 6,
+    "barcode": "8901234567896",
+    "supplier": "مزارع الهند",
+    "origin": {
+      "ar": "الهند",
+      "en": "India"
+    },
+    "nutritionFacts": {
+      "calories": "60",
+      "protein": "0.8g",
+      "carbs": "15g",
+      "fat": "0.4g",
+      "fiber": "1.6g",
+      "vitamins": "فيتامين A"
+    },
+    "storageInstructions": {
+      "ar": "في درجة حرارة الغرفة حتى النضج، ثم في الثلاجة",
+      "en": "Room temperature until ripe, then refrigerate"
+    }
+  },
+  {
+    "id": 8,
+    "name": {
+      "ar": "أناناس",
+      "en": "Pineapple"
+    },
+    "category": "fruits",
+    "units": [
+      {
+        "id": 1,
+        "unit": {
+          "ar": "حبة",
+          "en": "piece"
+        },
+        "price": 6.5,
+        "isDefault": true
+      }
+    ],
+    "image": "/images/products/pineapple.svg",
+    "images": [
+      "/images/products/pineapple.svg"
+    ],
+    "tags": [
+      "طازج",
+      "يحسن الهضم"
+    ],
+    "description": {
+      "ar": "أناناس استوائي طازج حلو وحامض، غني بالأنزيمات",
+      "en": "Fresh tropical pineapple, sweet and tangy, rich in enzymes"
+    },
+    "isPublished": true,
+    "stock": 50,
+    "minStock": 5,
+    "barcode": "8901234567897",
+    "supplier": "مزارع كوستاريكا",
+    "origin": {
+      "ar": "كوستاريكا",
+      "en": "Costa Rica"
+    },
+    "nutritionFacts": {
+      "calories": "50",
+      "protein": "0.5g",
+      "carbs": "13g",
+      "fat": "0.1g",
+      "fiber": "1.4g",
+      "vitamins": "فيتامين C"
+    },
+    "storageInstructions": {
+      "ar": "في درجة حرارة الغرفة حتى النضج، ثم في الثلاجة",
+      "en": "Room temperature until ripe, then refrigerate"
+    }
+  }
+]

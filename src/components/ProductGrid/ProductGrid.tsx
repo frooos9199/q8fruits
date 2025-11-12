@@ -8,26 +8,25 @@ interface ProductGridProps {
   products: Product[];
   language: Language;
   onAddToCart: (product: Product, selectedUnit: ProductUnit, quantity: number) => void;
+  searchTerm?: string;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({
   products,
   language,
   onAddToCart,
+  searchTerm = '',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
 
   const texts = {
     ar: {
       title: 'منتجاتنا الطازجة',
-      search: 'البحث في المنتجات...',
       noProducts: 'لا توجد منتجات متاحة',
       allCategories: 'جميع الفئات'
     },
     en: {
       title: 'Our Fresh Products',
-      search: 'Search products...',
       noProducts: 'No products available',
       allCategories: 'All Categories'
     }
@@ -49,17 +48,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       <div className="product-grid-header">
         <h2 className="section-title">{currentTexts.title}</h2>
         
-        {/* Search Bar */}
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder={currentTexts.search}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          <span className="search-icon">🔍</span>
-        </div>
       </div>
 
       {/* Category Filter */}

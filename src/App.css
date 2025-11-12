@@ -75,6 +75,10 @@
   --text-2xl: 1.5rem;
   --text-3xl: 1.875rem;
   --text-4xl: 2.25rem;
+
+  /* Legacy color variables for compatibility */
+  --primary-color: #22c55e;
+  --secondary-color: #16a34a;
 }
 
 /* Reset and Base Styles */

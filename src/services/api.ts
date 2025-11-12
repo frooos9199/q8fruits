@@ -1,7 +1,7 @@
 // API endpoints for mobile app integration
 import { Product, Order, User } from '../types';
 
-const API_BASE_URL = 'http://localhost:3000'; // سيتم تغييره للإنتاج
+const API_BASE_URL = 'https://www.q8fruit.com'; // Production endpoint (Vercel)
 
 // Products API
 export const ProductsAPI = {

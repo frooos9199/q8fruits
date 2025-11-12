@@ -16,6 +16,8 @@ interface HeaderProps {
   userEmail?: string;
   onLogout: () => void;
   onProfileClick?: () => void;
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -31,6 +33,8 @@ const Header: React.FC<HeaderProps> = ({
   userEmail,
   onLogout,
   onProfileClick,
+  searchTerm,
+  onSearchChange,
 }) => {
   const [clickCount, setClickCount] = React.useState(0);
   const [lastClickTime, setLastClickTime] = React.useState(0);
@@ -110,6 +114,21 @@ const Header: React.FC<HeaderProps> = ({
             <span className="phone-number">{currentTexts.phone}</span>
           </div>
         </div>
+
+
+        {/* Search Bar */}
+        {onSearchChange && (
+          <div className="header-search-container">
+            <span className="header-search-icon">🔍</span>
+            <input
+              type="text"
+              className="header-search-input"
+              placeholder={currentTexts.search}
+              value={searchTerm || ''}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="header-nav">

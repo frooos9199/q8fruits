@@ -71,6 +71,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [showOrderViewModal, setShowOrderViewModal] = useState(false);
+  const [deletingOrder, setDeletingOrder] = useState<Order | null>(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   // Products state
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -150,7 +153,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     ]
   });
 
-  // Load data on component mount
+  // Load data on component mount with API integration
   useEffect(() => {
     loadUsers();
     loadOrders();
@@ -159,7 +162,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     // Set up auto-refresh for orders every 30 seconds
     const intervalId = setInterval(() => {
       if (activeTab === 'orders') {
-        console.log('Auto-refreshing orders...');
+        console.log('🔄 Auto-refreshing orders...');
         loadOrders();
       }
     }, 30000); // 30 seconds
@@ -178,8 +181,74 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   }, [activeTab]);
 
-  // Load delivery settings from localStorage
-  const loadDeliverySettings = () => {
+  // API integration functions
+  const syncDataWithServer = async (dataType: 'users' | 'orders' | 'settings', data: any) => {
+    try {
+      console.log(`🌐 Syncing ${dataType} with server...`);
+      
+      const response = await fetch('/api/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: dataType,
+          data: data,
+          timestamp: new Date().toISOString()
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`✅ ${dataType} synced successfully:`, result);
+        return result;
+      } else {
+        console.warn(`⚠️ ${dataType} sync failed:`, response.status);
+      }
+    } catch (error) {
+      console.warn(`⚠️ ${dataType} sync error (falling back to localStorage):`, error);
+    }
+    
+    // Fallback to localStorage
+    localStorage.setItem(dataType, JSON.stringify(data));
+    return { success: true, source: 'localStorage' };
+  };
+
+  const loadDataFromServer = async (dataType: 'users' | 'orders' | 'settings') => {
+    try {
+      console.log(`🌐 Loading ${dataType} from server...`);
+      
+      const response = await fetch(`/api/data?type=${dataType}`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          console.log(`✅ ${dataType} loaded from server:`, result.data);
+          return result.data;
+        }
+      }
+    } catch (error) {
+      console.warn(`⚠️ ${dataType} server load failed, using localStorage:`, error);
+    }
+    
+    // Fallback to localStorage
+    const localData = localStorage.getItem(dataType);
+    return localData ? JSON.parse(localData) : null;
+  };
+
+  // Load delivery settings with API integration
+  const loadDeliverySettings = async () => {
+    try {
+      const serverSettings = await loadDataFromServer('settings');
+      if (serverSettings) {
+        setDeliverySettings(prev => ({ ...prev, ...serverSettings }));
+        return;
+      }
+    } catch (error) {
+      console.error('Error loading delivery settings from server:', error);
+    }
+    
+    // Fallback to localStorage
     try {
       const savedSettings = localStorage.getItem('deliverySettings');
       if (savedSettings) {
@@ -187,12 +256,30 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         setDeliverySettings(prev => ({ ...prev, ...parsed }));
       }
     } catch (error) {
-      console.error('Error loading delivery settings:', error);
+      console.error('Error loading delivery settings from localStorage:', error);
     }
   };
 
-  // Load users from localStorage
-  const loadUsers = () => {
+  // Load users with API integration
+  const loadUsers = async () => {
+    try {
+      const serverUsers = await loadDataFromServer('users');
+      if (serverUsers) {
+        const usersWithStats = serverUsers.map((user: any) => ({
+          ...user,
+          orderCount: Math.floor(Math.random() * 20),
+          totalSpent: Math.floor(Math.random() * 500) + 50,
+          isActive: true
+        }));
+        setUsers(usersWithStats);
+        setFilteredUsers(usersWithStats);
+        return;
+      }
+    } catch (error) {
+      console.error('Error loading users from server:', error);
+    }
+    
+    // Fallback to localStorage
     const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     const usersWithStats = registeredUsers.map((user: any) => ({
       ...user,
@@ -203,8 +290,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setFilteredUsers(usersWithStats);
   };
 
-  // Load orders from localStorage
-  const loadOrders = () => {
+  // Load orders with API integration
+  const loadOrders = async () => {
+    try {
+      const serverOrders = await loadDataFromServer('orders');
+      if (serverOrders) {
+        setOrders(serverOrders);
+        setFilteredOrders(serverOrders);
+        console.log('📋 Loaded orders from server:', serverOrders.length);
+        return;
+      }
+    } catch (error) {
+      console.error('Error loading orders from server:', error);
+    }
+    
+    // Fallback to localStorage
     const allOrders: Order[] = [];
     
     // Get all keys from localStorage that start with "orders_"
@@ -292,25 +392,95 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(filterOrders, [orders, orderSearchTerm, orderStatusFilter]);
   useEffect(filterProducts, [products, productSearchTerm, categoryFilter, language, refreshKey]);
 
-  // Update order status
-  const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
+  // Update order status with API sync
+  const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
 
-    // Update in localStorage
-    const userOrders = JSON.parse(localStorage.getItem(`orders_${order.userEmail}`) || '[]');
-    const orderIndex = userOrders.findIndex((o: any) => o.id === orderId);
-    
-    if (orderIndex !== -1) {
-      userOrders[orderIndex].status = newStatus;
-      localStorage.setItem(`orders_${order.userEmail}`, JSON.stringify(userOrders));
-      
-      // Update local state
+    try {
+      // Update local state immediately for better UX
       const updatedOrders = orders.map(o => 
         o.id === orderId ? { ...o, status: newStatus } : o
       );
       setOrders(updatedOrders);
+
+      // Sync with server
+      await syncDataWithServer('orders', updatedOrders);
+
+      // Update in localStorage as backup
+      const userOrders = JSON.parse(localStorage.getItem(`orders_${order.userEmail}`) || '[]');
+      const orderIndex = userOrders.findIndex((o: any) => o.id === orderId);
+      
+      if (orderIndex !== -1) {
+        userOrders[orderIndex].status = newStatus;
+        localStorage.setItem(`orders_${order.userEmail}`, JSON.stringify(userOrders));
+      }
+      
+      console.log('✅ Order status updated successfully');
+    } catch (error) {
+      console.error('❌ Error updating order status:', error);
+      // Revert state on error
+      loadOrders();
     }
+  };
+
+  // Delete order with confirmation
+  const handleDeleteOrder = (order: Order) => {
+    setDeletingOrder(order);
+    setDeleteConfirmText('');
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (!deletingOrder || deleteConfirmText !== 'DELETE') {
+      alert(language === 'ar' 
+        ? 'يرجى كتابة DELETE للتأكيد' 
+        : 'Please type DELETE to confirm'
+      );
+      return;
+    }
+
+    try {
+      console.log('🗑️ Deleting order:', deletingOrder.id);
+      
+      // Remove from local state
+      const updatedOrders = orders.filter(o => o.id !== deletingOrder.id);
+      setOrders(updatedOrders);
+
+      // Sync with server
+      await syncDataWithServer('orders', updatedOrders);
+
+      // Remove from localStorage
+      const userOrders = JSON.parse(localStorage.getItem(`orders_${deletingOrder.userEmail}`) || '[]');
+      const filteredUserOrders = userOrders.filter((o: any) => o.id !== deletingOrder.id);
+      localStorage.setItem(`orders_${deletingOrder.userEmail}`, JSON.stringify(filteredUserOrders));
+
+      // Close modal
+      setShowDeleteConfirmModal(false);
+      setDeletingOrder(null);
+      setDeleteConfirmText('');
+
+      alert(language === 'ar' 
+        ? '✅ تم حذف الطلب بنجاح' 
+        : '✅ Order deleted successfully'
+      );
+      
+      console.log('✅ Order deleted successfully');
+    } catch (error) {
+      console.error('❌ Error deleting order:', error);
+      alert(language === 'ar' 
+        ? '❌ فشل في حذف الطلب' 
+        : '❌ Failed to delete order'
+      );
+      // Reload orders on error
+      loadOrders();
+    }
+  };
+
+  const cancelDeleteOrder = () => {
+    setShowDeleteConfirmModal(false);
+    setDeletingOrder(null);
+    setDeleteConfirmText('');
   };
 
   // Toggle user active status
@@ -1291,6 +1461,18 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
                       title="مشاركة الفاتورة"
                     >
                       📤 مشاركة
+                    </button>
+                    <button 
+                      className="action-btn delete"
+                      onClick={() => handleDeleteOrder(order)}
+                      title="حذف الطلب"
+                      style={{ 
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        marginLeft: '5px'
+                      }}
+                    >
+                      🗑️ حذف
                     </button>
                   </div>
                 </td>
@@ -2813,6 +2995,92 @@ ${order.customerInfo?.notes ? `📝 ملاحظات: ${order.customerInfo.notes}`
                   ✅ حفظ التغييرات
                 </button>
                 <button className="cancel-btn" onClick={() => setShowEditProductModal(false)}>
+                  ❌ إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Order Delete Confirmation Modal */}
+        {showDeleteConfirmModal && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <div className="modal-header">
+                <h3>⚠️ تأكيد حذف الطلب</h3>
+                <button 
+                  className="close-btn" 
+                  onClick={() => {
+                    setShowDeleteConfirmModal(false);
+                    setDeleteConfirmText('');
+                    setDeletingOrder(null);
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="warning-section">
+                  <p>⚠️ <strong>تحذير: هذا الإجراء لا يمكن التراجع عنه!</strong></p>
+                  <p>أنت على وشك حذف الطلب رقم: <strong>{deletingOrder?.id}</strong></p>
+                  {deletingOrder && (
+                    <div className="order-details">
+                      <p><strong>العميل:</strong> {deletingOrder.userName}</p>
+                      <p><strong>البريد الإلكتروني:</strong> {deletingOrder.userEmail}</p>
+                      <p><strong>رقم الطلب:</strong> {deletingOrder.orderNumber}</p>
+                      <p><strong>المجموع:</strong> {deletingOrder.total} دينار</p>
+                      <p><strong>التاريخ:</strong> {new Date(deletingOrder.date).toLocaleDateString('ar-KW')}</p>
+                      <p><strong>الحالة:</strong> {deletingOrder.status}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="form-group">
+                  <label><strong>اكتب "DELETE" للتأكيد من الحذف:</strong></label>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="اكتب DELETE هنا"
+                    style={{ 
+                      border: deleteConfirmText === 'DELETE' ? '2px solid green' : '2px solid red',
+                      fontFamily: 'monospace',
+                      fontSize: '16px',
+                      textAlign: 'center'
+                    }}
+                  />
+                  {deleteConfirmText && deleteConfirmText !== 'DELETE' && (
+                    <p style={{ color: 'red', fontSize: '12px' }}>
+                      ⚠️ يجب كتابة "DELETE" بالضبط (بالأحرف الإنجليزية الكبيرة)
+                    </p>
+                  )}
+                  {deleteConfirmText === 'DELETE' && (
+                    <p style={{ color: 'green', fontSize: '12px' }}>
+                      ✅ تم التأكيد - يمكنك الآن الحذف
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="delete-btn"
+                  onClick={confirmDeleteOrder}
+                  disabled={deleteConfirmText !== 'DELETE'}
+                  style={{ 
+                    backgroundColor: deleteConfirmText === 'DELETE' ? '#dc3545' : '#ccc',
+                    cursor: deleteConfirmText === 'DELETE' ? 'pointer' : 'not-allowed'
+                  }}
+                >
+                  🗑️ حذف الطلب نهائياً
+                </button>
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => {
+                    setShowDeleteConfirmModal(false);
+                    setDeleteConfirmText('');
+                    setDeletingOrder(null);
+                  }}
+                >
                   ❌ إلغاء
                 </button>
               </div>

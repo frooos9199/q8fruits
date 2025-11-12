@@ -362,4 +362,466 @@
   [dir="rtl"] .profile-dropdown {
     left: -20px;
   }
+}/* Mobile-First Header Styles - نسخة محسنة للموبايل */
+
+@media (max-width: 768px) {
+  .header {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .header-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    max-width: 100%;
+  }
+
+  /* Logo Section - على اليسار */
+  .header-brand {
+    flex: 0 0 auto;
+    min-width: auto;
+    order: 1;
+  }
+
+  .logo-container {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .header-logo {
+    height: 45px;
+    width: 45px;
+    border: 2px solid #d1fae5;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+  }
+
+  .header-title,
+  .fallback-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  /* إخفاء Subtitle والهاتف في الموبايل */
+  .header-subtitle,
+  .header-phone {
+    display: none;
+  }
+
+  /* Navigation - على اليمين */
+  .header-nav {
+    flex: 0 0 auto;
+    order: 2;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* Buttons أصغر وأخف */
+  .language-toggle,
+  .cart-button,
+  .admin-button,
+  .user-button,
+  .login-button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    min-height: 38px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-width: 1px;
+  }
+
+  /* Cart Button */
+  .cart-button {
+    padding: 8px 14px;
+  }
+
+  .cart-icon {
+    font-size: 1.1rem;
+  }
+
+  .cart-text {
+    font-size: 0.85rem;
+  }
+
+  .cart-count {
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    top: -6px;
+    right: -6px;
+  }
+
+  /* User/Login Buttons */
+  .user-button,
+  .login-button {
+    padding: 8px 12px;
+  }
+
+  .user-icon,
+  .login-icon {
+    font-size: 1.1rem;
+  }
+
+  /* إظهار اسم المستخدم في الموبايل */
+  .user-name {
+    display: inline;
+    max-width: 70px;
+    font-size: 0.8rem;
+  }
+
+  .dropdown-arrow {
+    font-size: 0.75rem;
+  }
+
+  .login-text {
+    display: inline;
+    font-size: 0.85rem;
+  }
+
+  /* Language Toggle */
+  .language-toggle {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* للشاشات الصغيرة جداً */
+@media (max-width: 380px) {
+  .header-container {
+    padding: 0 12px;
+  }
+
+  .header-logo {
+    height: 40px;
+    width: 40px;
+  }
+
+  .header-title,
+  .fallback-title {
+    font-size: 1rem;
+  }
+
+  .language-toggle,
+  .cart-button,
+  .user-button,
+  .login-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+
+  .cart-text,
+  .login-text {
+    display: none;
+  }
+
+  .user-name {
+    max-width: 50px;
+  }
+}
+/* تصميم الأزرار المحدّث - متناسق وعصري */
+
+.language-toggle,
+.cart-button,
+.admin-button,
+.user-button,
+.login-button {
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  border: 2px solid #e5e7eb;
+  color: #374151;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.language-toggle::before,
+.cart-button::before,
+.admin-button::before,
+.user-button::before,
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.language-toggle:hover::before,
+.cart-button:hover::before,
+.admin-button:hover::before,
+.user-button:hover::before,
+.login-button:hover::before {
+  left: 100%;
+}
+
+/* زر اللغة - أخضر فاتح */
+.language-toggle {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid #6ee7b7;
+  color: #047857;
+}
+
+.language-toggle:hover {
+  background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+  border-color: #34d399;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+/* زر السلة - برتقالي جذاب */
+.cart-button {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border: 2px solid #f59e0b;
+  color: white;
+  font-weight: 700;
+}
+
+.cart-button:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-color: #d97706;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+/* زر الأدمن - رمادي أنيق */
+.admin-button {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  border: 2px solid #4b5563;
+  color: white;
+}
+
+.admin-button:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  border-color: #374151;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(75, 85, 99, 0.3);
+}
+
+/* زر المستخدم - أزرق هادئ */
+.user-button {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #60a5fa;
+  color: #1e40af;
+}
+
+.user-button:hover {
+  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+/* زر تسجيل الدخول - أخضر داكن */
+.login-button {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border: 2px solid #047857;
+  color: white;
+  font-weight: 700;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  border-color: #065f46;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+/* الأيقونات */
+.cart-icon,
+.admin-icon,
+.user-icon,
+.login-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.cart-button:hover .cart-icon,
+.admin-button:hover .admin-icon,
+.user-button:hover .user-icon,
+.login-button:hover .login-icon {
+  transform: scale(1.15);
+}
+
+/* عداد السلة - تصميم محسّن */
+.cart-count {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+  border: 2px solid white;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+/* النصوص */
+.cart-text,
+.login-text,
+.user-name {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.user-name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.user-button:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* حالة Active للأزرار */
+.language-toggle:active,
+.cart-button:active,
+.admin-button:active,
+.user-button:active,
+.login-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Focus للتوافقية */
+.language-toggle:focus,
+.cart-button:focus,
+.admin-button:focus,
+.user-button:focus,
+.login-button:focus {
+  outline: 3px solid rgba(5, 150, 105, 0.3);
+  outline-offset: 2px;
+}
+/* بحث مدمج في الهيدر */
+
+.header-search-container {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 20px;
+  position: relative;
+}
+
+.header-search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: 'Cairo', sans-serif;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.header-search-input:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.header-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.header-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+/* RTL Support */
+.rtl .header-search-input {
+  padding: 10px 40px 10px 16px;
+}
+
+.rtl .header-search-icon {
+  left: auto;
+  right: 12px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .header-search-container {
+    flex: 1;
+    max-width: none;
+    margin: 0 12px;
+    order: 3;
+    width: 100%;
+  }
+
+  .header-container {
+    flex-wrap: wrap;
+  }
+
+  .header-search-input {
+    padding: 8px 14px 8px 36px;
+    font-size: 0.85rem;
+  }
+
+  .header-search-icon {
+    font-size: 1rem;
+    left: 10px;
+  }
+
+  .rtl .header-search-icon {
+    right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-search-container {
+    margin: 8px 12px 0;
+  }
+
+  .header-search-input {
+    padding: 8px 12px 8px 32px;
+    font-size: 0.8rem;
+  }
 }

@@ -1,0 +1,56 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="grapeGradient" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" style="stop-color:#8bc34a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#689f38;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Grape Bunch -->
+  <!-- Top Row -->
+  <circle cx="130" cy="100" r="12" fill="url(#grapeGradient)" />
+  <circle cx="150" cy="95" r="12" fill="url(#grapeGradient)" />
+  <circle cx="170" cy="100" r="12" fill="url(#grapeGradient)" />
+  
+  <!-- Second Row -->
+  <circle cx="120" cy="120" r="11" fill="url(#grapeGradient)" />
+  <circle cx="140" cy="115" r="11" fill="url(#grapeGradient)" />
+  <circle cx="160" cy="115" r="11" fill="url(#grapeGradient)" />
+  <circle cx="180" cy="120" r="11" fill="url(#grapeGradient)" />
+  
+  <!-- Third Row -->
+  <circle cx="125" cy="140" r="10" fill="url(#grapeGradient)" />
+  <circle cx="145" cy="135" r="10" fill="url(#grapeGradient)" />
+  <circle cx="165" cy="135" r="10" fill="url(#grapeGradient)" />
+  <circle cx="185" cy="140" r="10" fill="url(#grapeGradient)" />
+  
+  <!-- Fourth Row -->
+  <circle cx="135" cy="155" r="9" fill="url(#grapeGradient)" />
+  <circle cx="155" cy="155" r="9" fill="url(#grapeGradient)" />
+  <circle cx="175" cy="155" r="9" fill="url(#grapeGradient)" />
+  
+  <!-- Fifth Row -->
+  <circle cx="145" cy="175" r="8" fill="url(#grapeGradient)" />
+  <circle cx="165" cy="175" r="8" fill="url(#grapeGradient)" />
+  
+  <!-- Bottom -->
+  <circle cx="155" cy="190" r="7" fill="url(#grapeGradient)" />
+  
+  <!-- Grape Leaves -->
+  <path d="M140 70 Q120 60 100 70 Q120 80 140 70" fill="#4caf50" />
+  <path d="M160 70 Q180 60 200 70 Q180 80 160 70" fill="#4caf50" />
+  
+  <!-- Grape Stem -->
+  <rect x="148" y="60" width="4" height="20" fill="#8b4513" />
+  
+  <!-- Highlights on grapes -->
+  <circle cx="135" cy="90" r="3" fill="#aed581" opacity="0.8" />
+  <circle cx="155" cy="85" r="3" fill="#aed581" opacity="0.8" />
+  <circle cx="150" cy="125" r="2" fill="#aed581" opacity="0.8" />
+  
+  <!-- Shadow -->
+  <ellipse cx="150" cy="220" rx="60" ry="15" fill="#000" opacity="0.2" />
+  
+  <!-- Text -->
+  <text x="150" y="250" text-anchor="middle" fill="#333" font-family="Arial" font-size="16" font-weight="bold">عنب أخضر</text>
+</svg>

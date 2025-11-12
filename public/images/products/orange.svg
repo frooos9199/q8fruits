@@ -1,0 +1,30 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="orangeGradient" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" style="stop-color:#ff9500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff6600;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Orange Body -->
+  <circle cx="150" cy="150" r="80" fill="url(#orangeGradient)" />
+  
+  <!-- Orange Texture -->
+  <circle cx="120" cy="120" r="3" fill="#ff7700" opacity="0.8" />
+  <circle cx="180" cy="130" r="2" fill="#ff7700" opacity="0.8" />
+  <circle cx="140" cy="180" r="2" fill="#ff7700" opacity="0.8" />
+  <circle cx="170" cy="170" r="3" fill="#ff7700" opacity="0.8" />
+  <circle cx="130" cy="160" r="2" fill="#ff7700" opacity="0.8" />
+  
+  <!-- Orange Highlight -->
+  <ellipse cx="120" cy="120" rx="20" ry="25" fill="#ffb347" opacity="0.6" />
+  
+  <!-- Orange Leaf -->
+  <ellipse cx="155" cy="75" rx="6" ry="15" fill="#28a745" transform="rotate(20 155 75)" />
+  
+  <!-- Shadow -->
+  <ellipse cx="150" cy="240" rx="60" ry="15" fill="#000" opacity="0.2" />
+  
+  <!-- Text -->
+  <text x="150" y="270" text-anchor="middle" fill="#333" font-family="Arial" font-size="16" font-weight="bold">برتقال طازج</text>
+</svg>
