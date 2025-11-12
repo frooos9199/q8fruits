@@ -190,7 +190,6 @@ const Header: React.FC<HeaderProps> = ({
           ) : (
             <button className="login-button" onClick={onLoginClick}>
               <span className="login-icon">🔑</span>
-              <span className="login-text">{currentTexts.login}</span>
             </button>
           )}
         </nav>
